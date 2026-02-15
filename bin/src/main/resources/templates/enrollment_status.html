@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>EAC Portal - Track Application</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/emblem.png}" alt="EAC Logo" class="sidebar-logo">
+            <h3>EAC PORTAL</h3>
+        </div>
+        <nav class="nav-menu">
+            <a th:href="@{/index}" class="nav-item">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a th:href="@{/account_status(studentNumber=${student != null ? student.studentNumber : ''})}" 
+               class="nav-item" th:if="${student != null}">
+                <i class="fas fa-file-invoice-dollar"></i> My Ledger
+            </a>
+            <a th:href="@{/status}" class="nav-item active">
+                <i class="fas fa-tasks"></i> Application Status
+            </a>
+            <div class="nav-divider"></div>
+            <a th:href="@{/logout}" class="nav-item logout" sec:authorize="isAuthenticated()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            <a th:href="@{/login}" class="nav-item" sec:authorize="!isAuthenticated()">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <h1>Track Application Status</h1>
+        </header>
+
+        <div class="card" style="border-left: 5px solid #800000;">
+            <div class="card-body" style="padding: 30px; text-align: center;">
+                <h3 style="margin-bottom: 10px; color: #333;">Check Your Progress</h3>
+                <p style="color: #666; margin-bottom: 20px;">Please enter your Reference Number (e.g., EAC-XXXX-XXXX) to track your enrollment.</p>
+                
+                <form th:action="@{/status}" method="get" style="display: flex; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
+                    <input type="text" name="searchRef" class="search-input" placeholder="Enter Reference Number" required>
+                    <button type="submit" class="btn-search">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${student != null}">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clipboard-check"></i>
+                    <h3>Application Found</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="profile-grid" style="margin-bottom: 20px;">
+                        <div class="profile-item">
+                            <label>Applicant Name</label>
+                            <span th:text="${student.firstName + ' ' + student.lastName}"></span>
+                        </div>
+                        <div class="profile-item">
+                            <label>Reference / Student ID</label>
+                            <span th:text="${student.studentNumber}"></span>
+                        </div>
+                        <div class="profile-item">
+                            <label>Current Status</label>
+                            <span th:text="${student.applicantStatus}" 
+                                  th:style="${student.applicantStatus == 'ENROLLED' ? 'color: green; font-weight: bold;' : 'color: #d90429; font-weight: bold;'}">
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+                    <div th:if="${student.applicantStatus == 'PENDING'}" 
+                         style="background: #fff3e0; padding: 20px; border-radius: 8px; border-left: 5px solid #ff9800;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <i class="fas fa-hourglass-half" style="font-size: 2rem; color: #ff9800;"></i>
+                            <div>
+                                <h4 style="margin: 0; color: #e65100;">Action Required</h4>
+                                <p style="margin: 5px 0 15px 0; color: #555;">Your application is under review. Please settle your downpayment to finalize your enrollment.</p>
+                                <a th:href="@{/account_status(studentNumber=${student.studentNumber})}" class="btn-search" style="background-color: #27ae60; text-decoration: none; display: inline-block;">
+                                    Settle Downpayment Now <i class="fas fa-chevron-right" style="margin-left: 5px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${student.applicantStatus == 'ENROLLED'}" 
+                         style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 5px solid #2e7d32;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <i class="fas fa-check-circle" style="font-size: 2rem; color: #2e7d32;"></i>
+                            <div>
+                                <h4 style="margin: 0; color: #1b5e20;">Enrollment Confirmed</h4>
+                                <p style="margin: 5px 0 0 0; color: #555;">Congratulations! You are officially enrolled. Please check your student ledger for your schedule and section details.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${error != null}" class="alert alert-error" style="text-align: center; padding: 30px;">
+            <i class="fas fa-search-minus" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <div th:if="${student == null and error == null}" style="text-align: center; margin-top: 50px; color: #999;">
+            <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 15px;"></i>
+            <p>Your results will appear here once you search for a reference number.</p>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>

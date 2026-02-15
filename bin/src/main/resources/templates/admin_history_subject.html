@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Subject History Log</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .badge-added { background-color: #d4edda; color: #155724; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+        .badge-removed { background-color: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+        .history-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .history-table th, .history-table td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
+        .history-table th { background-color: #333; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="/images/emblem.png" alt="EAC Logo" class="sidebar-logo">
+            <h3>EAC CASHIER</h3>
+        </div>
+        <nav class="nav-menu">
+            <a href="/admin/dashboard" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/admin/cashier" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Student Ledger</a>
+            <a href="/admin/walkin-payment" class="nav-item"><i class="fas fa-cash-register"></i> Process Payment</a>
+            <a href="/admin/history-subject" class="nav-item active"><i class="fas fa-history"></i> History Subject</a>
+            <div class="nav-divider"></div>
+            <a href="/logout" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <h1>Subject Enlistment History</h1>
+        </header>
+
+        <div class="card" style="padding: 0;">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Student No.</th>
+                        <th>Action</th>
+                        <th>Course Code</th>
+                        <th>Course Title</th>
+                        <th>Performed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="log : ${logs}">
+                        <td th:text="${#dates.format(log.timestamp, 'MMM dd, yyyy HH:mm')}"></td>
+                        <td th:text="${log.studentNumber}" style="font-weight: bold;"></td>
+                        <td>
+                            <span th:text="${log.action}" 
+                                  th:class="${log.action == 'ADDED'} ? 'badge-added' : 'badge-removed'">
+                            </span>
+                        </td>
+                        <td th:text="${log.courseCode}"></td>
+                        <td th:text="${log.courseTitle}"></td>
+                        <td th:text="${log.performedBy}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(logs)}">
+                        <td colspan="6" style="text-align: center; padding: 30px; color: #777;">
+                            No history records found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

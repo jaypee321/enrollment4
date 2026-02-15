@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Official Receipt</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+        /* Print Settings */
+        @media print {
+            @page { size: landscape; margin: 0; }
+            body { margin: 0; padding: 20px; -webkit-print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+
+        body {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* The Main Container representing the paper */
+        .receipt-paper {
+            width: 1000px; /* Landscape width */
+            height: 500px;
+            background: #fff; /* White paper */
+            padding: 20px;
+            border: 1px solid #ccc;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* --- LEFT SIDE: INVOICE --- */
+        .invoice-section {
+            flex: 2;
+            border: 2px solid #e67e22; /* The Orange Border Color */
+            padding: 15px;
+            position: relative;
+            border-radius: 4px;
+        }
+
+        .header { text-align: center; color: #d35400; margin-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { margin: 2px 0; font-size: 0.7rem; }
+        .header .title { font-size: 1.4rem; font-weight: bold; margin-top: 5px; display: block; }
+
+        .invoice-number {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            color: #c0392b; /* Red Invoice Number */
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* Field Layouts */
+        .row { display: flex; margin-bottom: 5px; align-items: baseline; }
+        .label { font-size: 0.75rem; color: #d35400; width: 120px; font-weight: bold; text-transform: uppercase; }
+        .value { border-bottom: 1px solid #333; flex: 1; padding-left: 10px; font-weight: bold; font-size: 0.9rem; }
+        
+        .box-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 2px solid #e67e22;
+            padding-top: 10px;
+        }
+        
+        .box { border: 1px solid #e67e22; padding: 5px; flex: 1; }
+        .box-header { background: #fae5d3; color: #d35400; font-size: 0.7rem; text-align: center; font-weight: bold; margin-bottom: 5px; }
+        
+        .amount-box { text-align: center; font-size: 1.2rem; font-weight: bold; padding: 10px 0; }
+        .words-box { font-size: 0.8rem; text-align: center; font-style: italic; }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        .breakdown { font-size: 0.7rem; text-align: right; line-height: 1.4; }
+        .cashier-area { text-align: center; margin-top: 20px; }
+        .signature-line { border-top: 1px solid #333; display: inline-block; width: 80%; margin-top: 30px; padding-top: 5px; }
+
+        /* --- RIGHT SIDE: PERMIT --- */
+        .permit-section {
+            flex: 1;
+            border-left: 2px dashed #999; /* Perforation line */
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .permit-header { text-align: center; color: #d35400; font-weight: bold; border-bottom: 2px solid #e67e22; padding-bottom: 10px; margin-bottom: 10px; }
+        
+        .subject-list {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        .subject-list th { text-align: left; border-bottom: 1px solid #ccc; }
+        .subject-list td { padding: 4px 0; }
+
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.6rem;
+            color: #999;
+        }
+
+        /* Buttons */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn { padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 5px; cursor: pointer; border: none; }
+        .btn-print { background: #d35400; }
+
+    </style>
+</head>
+<body>
+
+    <div class="controls no-print">
+        <button onclick="window.print()" class="btn btn-print">🖨️ Print Receipt</button>
+        <a href="/admin/dashboard" class="btn">Back to Dashboard</a>
+    </div>
+
+    <div class="receipt-paper">
+        <div class="vertical-text">BIR Permit No. CAS-2025-001 | VALID FOR 5 YEARS</div>
+
+        <div class="invoice-section">
+            <div class="header">
+                <h2>Emilio Aguinaldo College</h2>
+                <p>1113-1117 San Marcelino St., Ermita, Manila</p>
+                <p>VAT REG TIN: 000-000-000-000</p>
+                <span class="title">SERVICE INVOICE</span>
+            </div>
+
+            <div class="invoice-number" th:text="'No. ' + ${payment.transactionId}">No. 00036383</div>
+
+            <div class="row">
+                <span class="label">Student No.</span>
+                <span class="value" th:text="${student.studentNumber}">22-2-01775</span>
+            </div>
+            <div class="row">
+                <span class="label">Name</span>
+                <span class="value" th:text="${student.lastName + ', ' + student.firstName}">SINGUIT, JAYPEE</span>
+            </div>
+            <div class="row">
+                <span class="label">Course</span>
+                <span class="value" th:text="${student.program1}">BSIT</span>
+            </div>
+
+            <div class="box-container">
+                <div class="box">
+                    <div class="box-header">AMOUNT</div>
+                    <div class="amount-box" th:text="${#numbers.formatDecimal(payment.amount, 1, 'COMMA', 2, 'POINT')}">5,000.00</div>
+                    <div class="words-box" th:text="${amountInWords}">Five Thousand Pesos Only</div>
+                </div>
+                
+                <div class="box">
+                    <div class="box-header">IN PAYMENT FOR</div>
+                    <div style="text-align:center; padding: 10px; font-weight:bold;">
+                        TUITION FEE<br>
+                        <span style="font-size:0.8rem; font-weight:normal;">SY: <span th:text="${term}">2nd 2425</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-grid">
+                <div class="cashier-area">
+                    <div class="row">
+                        <span class="label" style="width: auto; margin-right: 10px;">Date:</span>
+                        <span class="value" th:text="${formattedDate}">03-27-2025</span>
+                    </div>
+                    <br>
+                    <div class="signature-line">
+                        <span th:text="${payment.paymentMethod == 'CASH' ? 'CASHIER' : 'CASHIER CLERK'}">CASHIER</span><br>
+                        <small>Authorized Signature</small>
+                    </div>
+                </div>
+
+                <div class="breakdown">
+                    <div>VATABLE (V): 0.00</div>
+                    <div>VAT EXEMPT (E): <span th:text="${payment.amount}">5000.00</span></div>
+                    <div>ZERO RATED (Z): 0.00</div>
+                    <div>TOTAL SALE: <span th:text="${payment.amount}">5000.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="permit-section">
+            <div class="permit-header">
+                EXAMINATION PERMIT<br>
+                <span style="font-size: 0.8rem; color: #333;">STUDENT COPY</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <div style="font-weight: bold;" th:text="${student.lastName + ', ' + student.firstName}">SINGUIT, JAYPEE</div>
+                <div style="font-size: 0.8rem;" th:text="${student.program1}">BSIT</div>
+            </div>
+
+            <table class="subject-list">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Subject Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>UADET32LAB</td>
+                        <td>Application Dev Lab</td>
+                    </tr>
+                    <tr>
+                        <td>UADET32LEC</td>
+                        <td>Application Dev Lec</td>
+                    </tr>
+                    <tr>
+                        <td>UAS132LEC</td>
+                        <td>Info Assurance Sec</td>
+                    </tr>
+                    <tr>
+                        <td>USPI32</td>
+                        <td>Social Prof Issues</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: auto; text-align: center; font-size: 0.7rem; color: #777;">
+                <p>Present this permit to the proctor before taking the examination.</p>
+                <div style="border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
+                    Ref: <span th:text="${payment.transactionId}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

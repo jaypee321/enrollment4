@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAC Student Portal - Home</title>
+    
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Specific styles for the "Steps" cards to fit the new terminal look */
+        .hero-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .hero-section h1 { color: #a81c1c; margin-bottom: 10px; }
+
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .step-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s;
+            border-bottom: 4px solid #ddd;
+        }
+
+        .step-card:hover { transform: translateY(-5px); border-bottom-color: #a81c1c; }
+        .step-card i { font-size: 2.5rem; color: #a81c1c; margin-bottom: 15px; }
+        .step-card h3 { margin-bottom: 10px; color: #333; }
+        .step-card p { font-size: 0.9rem; color: #666; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/emblem.png}" alt="EAC Logo" class="sidebar-logo">
+            <h3>EAC PORTAL</h3>
+        </div>
+        <nav class="nav-menu">
+            <a th:href="@{/index}" class="nav-item active">
+                <i class="fas fa-home"></i> Home
+            </a>
+            
+            <a th:href="@{/account_status(studentNumber='22-1-00988')}" class="nav-item" sec:authorize="isAuthenticated()">
+                <i class="fas fa-file-invoice-dollar"></i> My Ledger
+            </a>
+            
+            <a th:href="@{/status}" class="nav-item" sec:authorize="isAuthenticated()">
+                <i class="fas fa-tasks"></i> Application Status
+            </a>
+
+            <div class="nav-divider"></div>
+            
+            <a th:href="@{/login}" class="nav-item" sec:authorize="!isAuthenticated()">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a th:href="@{/logout}" class="nav-item logout" sec:authorize="isAuthenticated()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <h1>Student Enrollment Terminal</h1>
+        </header>
+
+        <section class="hero-section">
+            <h1>Welcome Future Generals!</h1>
+            <p>
+                Start your Online Enrollment for the Academic Year 
+                <span th:text="${academicYear}" style="font-weight: bold; color: #a81c1c;">2024-2025</span>.
+            </p>
+            <p style="color: #666; font-size: 0.95rem;">
+                The process is fast, easy, and secure for all First-Year, Transferees, and Continuing Students.
+            </p>
+        </section>
+
+        <div class="card-header" style="background: none; padding-left: 0;">
+            <i class="fas fa-info-circle"></i> <h3>Three Easy Steps to Enroll</h3>
+        </div>
+        
+        <div class="steps-container">
+            <div class="step-card">
+                <i class="fas fa-file-signature"></i>
+                <h3>1. Fill-out Form</h3>
+                <p>Provide all necessary personal and academic information through the online form.</p>
+            </div>
+
+            <div class="step-card">
+                <i class="fas fa-paperclip"></i>
+                <h3>2. Upload Requirements</h3>
+                <p>Upload required documents (such as TOR or Form 138) for validation by the registrar's office.</p>
+            </div>
+
+            <div class="step-card">
+                <i class="fas fa-check-double"></i>
+                <h3>3. Payment & Confirmation</h3>
+                <p>Pay the downpayment online or through partner banks to complete your registration.</p>
+            </div>
+        </div>
+
+        <div th:if="${#authorization.expression('isAuthenticated()')}" style="margin-top: 30px; text-align: center;">
+            <a th:href="@{/account_status(studentNumber='22-1-00988')}" class="btn-search" style="display: inline-block; padding: 15px 30px; text-decoration: none;">
+                Proceed to My Ledger <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+            </a>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

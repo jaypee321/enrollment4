@@ -1,0 +1,126 @@
+/* ==================================== */
+/* BASE STYLES / RESET         */
+/* ==================================== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0; /* Light Gray Background */
+    color: #333;
+}
+
+/* ==================================== */
+/* HEADER / NAVIGATION BAR         */
+/* ==================================== */
+.header {
+    background-color: #A00000; /* Deep Red (EAC Color) */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.logo-text {
+    font-size: 1.8em;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+.logo-text span {
+    color: #FFD700; /* Gold accent */
+}
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+.nav-links a:hover {
+    color: #FFD700; /* Gold on hover */
+}
+
+/* ==================================== */
+/* MAIN CONTENT (HERO SECTION)     */
+/* ==================================== */
+.hero-section {
+    background-color: white;
+    padding: 80px 20px;
+    text-align: center;
+    border-bottom: 5px solid #A00000; /* Red underline */
+}
+.hero-section h1 {
+    color: #A00000; /* Deep Red Title */
+    font-size: 2.8em;
+    margin-bottom: 10px;
+}
+.hero-section p {
+    font-size: 1.3em;
+    color: #555;
+    max-width: 800px;
+    margin: 0 auto 30px;
+}
+
+/* ==================================== */
+/* BUTTONS                 */
+/* ==================================== */
+.btn-primary, .btn-secondary {
+    display: inline-block;
+    padding: 12px 30px;
+    margin: 10px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.btn-primary {
+    background-color: #A00000; /* Main Red Button */
+    color: white;
+    border: 2px solid #A00000;
+}
+.btn-primary:hover {
+    background-color: #8B0000; /* Darker Red on hover */
+    transform: translateY(-2px);
+}
+.btn-secondary {
+    background-color: white;
+    color: #A00000; /* Red text */
+    border: 2px solid #A00000;
+}
+.btn-secondary:hover {
+    background-color: #FFD700; /* Gold background on hover */
+    color: #333;
+    transform: translateY(-2px);
+}
+
+/* ==================================== */
+/* FEATURES SECTION            */
+/* ==================================== */
+.features-section {
+    padding: 50px 20px;
+    text-align: center;
+}
+.features-section h2 {
+    color: #A00000;
+    margin-bottom: 30px;
+}
+.feature-card {
+    display: inline-block;
+    width: 30%;
+    margin: 15px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    vertical-align: top;
+}
+.feature-card h3 {
+    color: #A00000;
+    margin-top: 0;
+}
+.icon {
+    font-size: 2em;
+    margin-bottom: 10px;
+    color: #A00000;
+}

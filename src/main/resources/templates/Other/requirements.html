@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Form - Requirements</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/form.css}"> 
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <a href="/" class="header-link"> 
+                <div class="logo">
+                    <img th:src="@{/images/emblem.png}" alt="Emilio Aguinaldo College Logo">
+                    <div class="logo-text">EMILIO AGUINALDO COLLEGE</div>
+                </div>
+            </a>
+            <h1>Enrollment Form</h1>
+        </header>
+
+        <div class="navigation">
+            <div class="step complete">
+                <a th:href="@{/enroll}" class="step-link">
+                    <span class="step-number">1</span>
+                    Personal Info
+                </a>
+            </div>
+            
+            <div class="step complete">
+                <a th:href="@{/contact-info}" class="step-link">
+                    <span class="step-number">2</span>
+                    Contact Info
+                </a>
+            </div>
+            
+            <div class="step complete">
+                <a th:href="@{/family-info}" class="step-link">
+                    <span class="step-number">3</span>
+                    Family Info
+                </a>
+            </div>
+            
+            <div class="step complete">
+                <a th:href="@{/educational-bg}" class="step-link">
+                    <span class="step-number">4</span>
+                    Educational BG
+                </a>
+            </div>
+            
+            <div class="step active">
+                <a th:href="@{/requirements}" class="step-link">
+                    <span class="step-number">5</span>
+                    Requirements
+                </a>
+            </div>
+        </div>
+        
+        <form id="uploadForm" th:action="@{/submit-enrollment}" method="POST" enctype="multipart/form-data">
+             <div class="form-section">
+                <h2 class="section-title">5. Requirements Upload</h2>
+                
+                <div class="form-info-block upload-note">
+                    <p><strong>IMPORTANT:</strong> Please ensure that all documents are in JPEG or PDF format, and are clear (clear scan or photo). The maximum file size is <strong>5MB per file</strong>.</p>
+                </div>
+
+                <p class="subtitle">Required Documents for Freshmen Applicants</p>
+                
+                <div class="form-row two-col upload-row">
+                    <div class="form-group">
+                        <label for="form138">1. Certified True Copy of Form 138 (Report Card) *</label>
+                        <input type="file" id="form138" name="form138" accept=".pdf,.jpg,.jpeg" required>
+                        <small class="error-msg" id="error-form138" style="color: red; display: none;">File too large (Max 5MB)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="goodMoral">2. Certificate of Good Moral Character *</label>
+                        <input type="file" id="goodMoral" name="goodMoral" accept=".pdf,.jpg,.jpeg" required>
+                        <small class="error-msg" id="error-goodMoral" style="color: red; display: none;">File too large (Max 5MB)</small>
+                    </div>
+                </div>
+
+                <div class="form-row two-col upload-row">
+                    <div class="form-group">
+                        <label for="psaBirthCert">3. PSA Birth Certificate (Clear Photocopy) *</label>
+                        <input type="file" id="psaBirthCert" name="psaBirthCert" accept=".pdf,.jpg,.jpeg" required>
+                        <small class="error-msg" id="error-psaBirthCert" style="color: red; display: none;">File too large (Max 5MB)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="idPicture">4. 2x2 Recent ID Picture (White Background) *</label>
+                        <input type="file" id="idPicture" name="idPicture" accept=".jpg,.jpeg,.png" required>
+                        <small class="error-msg" id="error-idPicture" style="color: red; display: none;">File too large (Max 5MB)</small>
+                    </div>
+                </div>
+
+                <p class="subtitle">Additional Requirements (If Applicable)</p>
+                
+                <div class="form-row two-col upload-row">
+                    <div class="form-group">
+                        <label for="marriageCert">PSA Marriage Certificate (Married Female Applicants only)</label>
+                        <input type="file" id="marriageCert" name="marriageCert" accept=".pdf,.jpg,.jpeg">
+                        <small class="error-msg" id="error-marriageCert" style="color: red; display: none;">File too large (Max 5MB)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="otherDoc">Other Supporting Document (Specify in filename)</label>
+                        <input type="file" id="otherDoc" name="otherDoc" accept=".pdf,.jpg,.jpeg">
+                        <small class="error-msg" id="error-otherDoc" style="color: red; display: none;">File too large (Max 5MB)</small>
+                    </div>
+                </div>
+
+                <div class="note checkbox-note"> 
+                    <input type="checkbox" id="declaration" name="declaration" required> 
+                    <label for="declaration">I hereby certify that all information provided in this application is true and correct, and I agree to abide by the rules and regulations of the University.</label>
+                </div>
+
+                <div class="form-actions final-submit">
+                    <a th:href="@{/educational-bg}" class="btn cancel-btn back-btn">← PREVIOUS (Section 4)</a>
+                    
+                    <button type="submit" class="btn next-btn final-btn">SUBMIT APPLICATION</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const MAX_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+            const inputs = document.querySelectorAll('input[type="file"]');
+
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const errorMsg = document.getElementById('error-' + this.id);
+                    if (this.files.length > 0) {
+                        if (this.files[0].size > MAX_SIZE) {
+                            // File too big
+                            errorMsg.style.display = 'block';
+                            this.value = ''; // Clear the input
+                            alert("The file " + this.files[0].name + " is too large. Please upload a file smaller than 5MB.");
+                        } else {
+                            // File ok
+                            errorMsg.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

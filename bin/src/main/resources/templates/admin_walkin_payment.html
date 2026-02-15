@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin - Process Walk-in</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="/images/emblem.png" alt="EAC Logo" class="sidebar-logo">
+            <h3>EAC CASHIER</h3>
+        </div>
+		<nav class="nav-menu">
+		    <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ADMIN')">
+		        <i class="fas fa-chart-line"></i> Dashboard
+		    </a>
+
+		    <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'CASHIER')">
+		        <i class="fas fa-file-invoice-dollar"></i> Student Ledger
+		    </a>
+
+		    <a th:href="@{/admin/walkin-payment}" class="nav-item active">
+		        <i class="fas fa-cash-register"></i> Process Payment
+		    </a>
+
+		    <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ADMIN')">
+		        <i class="fas fa-history"></i> Subject Logs
+		    </a>
+
+		    <div class="nav-divider"></div>
+		    <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+		</nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <h1>Walk-in Payment Processing</h1>
+        </header>
+
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-check-circle"></i> <strong th:text="${successMessage}"></strong></span>
+                <a th:if="${transactionId}" th:href="@{/print-receipt/{id}(id=${transactionId})}" target="_blank" class="btn-pay" style="background-color: #155724;">
+                    <i class="fas fa-print"></i> Print Receipt
+                </a>
+            </div>
+            <p th:if="${transactionId}" style="margin-top: 10px; font-size: 0.8rem;">Ref: <span th:text="${transactionId}"></span></p>
+        </div>
+
+        <div style="max-width: 700px; margin: 0 auto; width: 100%;">
+            
+            <div class="card" style="border-top: 5px solid #27ae60;">
+                <div class="card-header">
+                    <i class="fas fa-cash-register" style="color: #27ae60;"></i>
+                    <h3 style="color: #27ae60; margin:0;">Receive Payment</h3>
+                </div>
+                
+                <div class="card-body" style="padding: 30px;">
+                    <form action="/admin/process-walkin" method="POST">
+                        
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+						    <div>
+						        <label class="info-label">Student Number or Surname</label>
+						        
+						        <input type="text" name="studentIdentifier" class="search-input" style="width:100%;" 
+						               placeholder="e.g. 22-2-01775 or Dela Cruz" required>
+						    </div>
+						</div>
+
+                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 25px;">
+                            <label class="info-label" style="text-align: center; display: block; margin-bottom: 10px;">Amount Received (PHP)</label>
+                            <input type="number" name="amount" 
+                                   style="width: 100%; padding: 15px; font-size: 2.5rem; font-weight: bold; color: #27ae60; border: 2px solid #27ae60; border-radius: 6px; text-align: center; outline: none;" 
+                                   placeholder="0.00" step="0.01" min="1" required>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <label class="info-label">Payment Method</label>
+                            <select name="paymentType" class="search-input" style="width:100%; height: 45px;">
+                                <option value="CASH">Cash (Over the Counter)</option>
+                                <option value="CHECK">Check</option>
+                                <option value="BANK_TRANSFER">Bank Transfer (Walk-in Reference)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <label class="info-label">Remarks / Description</label>
+                            <input type="text" name="remarks" class="search-input" style="width:100%;" placeholder="e.g. Downpayment for Sem 2">
+                        </div>
+
+                        <button type="submit" class="btn-search" style="width: 100%; padding: 18px; font-size: 1.1rem; background-color: #27ae60;">
+                            Process & Save Transaction <i class="fas fa-check-circle" style="margin-left: 10px;"></i>
+                        </button>
+                        
+                        <a href="/admin/cashier" style="display: block; text-align: center; margin-top: 20px; color: #777; text-decoration: none; font-size: 0.9rem;">
+                            <i class="fas fa-arrow-left"></i> Cancel and go back to Ledger
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; background: #e8f5e9; padding: 15px; border-radius: 8px; color: #2e7d32; font-size: 0.85rem; display: flex; gap: 10px; align-items: center;">
+                <i class="fas fa-info-circle"></i>
+                <span>Processing this payment will automatically update the student's <b>Payment Schedule</b> status and <b>Outstanding Balance</b>.</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

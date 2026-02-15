@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Course Enlistment</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h2>Course Enlistment: <span th:text="${student.firstName + ' ' + student.lastName}"></span></h2>
+        
+        <form th:action="@{/admin/enlistment/save}" method="post">
+            <input type="hidden" name="studentId" th:value="${student.id}">
+            
+            <h3>Enlisted Courses and Schedules</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Course Code</th>
+                        <th>Title</th>
+                        <th>Units</th>
+                        <th>Schedule</th> </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="subject : ${enlistedSubjects}">
+                        <td><input type="checkbox" name="enlistmentIds" th:value="${subject.enlistment_id}"></td>
+                        <td th:text="${subject.course_code}"></td>
+                        <td th:text="${subject.course_title}"></td>
+                        <td th:text="${subject.credit_units}"></td>
+                        <td th:text="${subject.schedule != null ? subject.schedule : 'TBA'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="actions">
+                <button type="submit" class="btn-primary">Finalize Enlistment</button>
+                <a href="/admin/dashboard" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

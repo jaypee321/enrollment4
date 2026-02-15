@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment Successful</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/form.css}">
+    <style>
+        .receipt-container {
+            max-width: 500px;
+            margin: 50px auto;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-top: 5px solid #28a745;
+        }
+        .success-icon { color: #28a745; font-size: 50px; margin-bottom: 20px; }
+        .details-table { width: 100%; margin: 20px 0; text-align: left; }
+        .details-table td { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .total-row { font-weight: bold; font-size: 1.2em; color: #333; }
+        .status-badge {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="receipt-container">
+    <div class="success-icon">✓</div>
+    <h2>Payment Received!</h2>
+    <p>Your payment was successful and your enrollment status has been updated.</p>
+    
+    <div class="status-badge">NEW STATUS: ENROLLED</div>
+    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+        A confirmation email has been sent to <span th:text="${student.email}" style="font-weight:bold;">email@example.com</span>.
+    </p>
+
+    <table class="details-table">
+        <tr>
+            <td style="color: #777;">Reference No</td>
+            <td style="text-align: right;" th:text="${student.referenceNumber}">REF-123</td>
+        </tr>
+        <tr>
+            <td style="color: #777;">Transaction ID</td>
+            <td style="text-align: right; font-family: monospace;" th:text="${transactionId}">TRX-123456</td>
+        </tr>
+        <tr>
+            <td style="color: #777;">Date</td>
+            <td style="text-align: right;" th:text="${#dates.format(date, 'dd-MMM-yyyy HH:mm')}">Date</td>
+        </tr>
+        <tr class="total-row">
+            <td>Amount Paid</td>
+            <td style="text-align: right;">
+                PHP <span th:text="${#numbers.formatDecimal(amountPaid, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+            </td>
+        </tr>
+    </table>
+    
+    <br>
+    <a th:href="@{/status(searchRef=${student.referenceNumber})}" class="btn next-btn">Verify Status</a>
+    <br><br>
+    <button onclick="window.print()" style="background:none; border:none; color:#777; cursor:pointer; text-decoration:underline;">Print Receipt</button>
+</div>
+
+</body>
+</html>

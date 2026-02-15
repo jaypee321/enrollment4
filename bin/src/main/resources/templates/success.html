@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Submission Successful</title>
+    <link rel="stylesheet" th:href="@{/css/form.css}">
+    <style>
+        .success-box {
+            text-align: center;
+            padding: 40px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        .ref-number {
+            font-size: 2em;
+            color: #d90429; /* EAC Red */
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #d90429;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img th:src="@{/images/emblem.png}" alt="Logo" style="height: 50px;">
+                <div class="logo-text">EMILIO AGUINALDO COLLEGE</div>
+            </div>
+        </header>
+
+        <div class="success-box">
+            <h1 style="color: #28a745;">Application Submitted!</h1>
+            <p>Thank you for enrolling. Your application has been received.</p>
+            
+            <p>Please save your Reference Number to track your status:</p>
+            
+            <div class="ref-number" th:text="${refNo}">EAC-XXXX-XXXX</div>
+            
+            <p><small>Take a screenshot or write this number down.</small></p>
+            
+            <br>
+            <a th:href="@{/status}" class="btn next-btn">Track Application Status</a>
+            <br><br>
+            <a th:href="@{/}" class="btn cancel-btn">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Form - Personal Information</title>
+    <link rel="stylesheet" th:href="@{/css/form.css}" /> 
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a th:href="@{/}" class="header-link"> 
+                <div class="logo">
+                    <img th:src="@{/images/emblem.png}" alt="Logo" style="height:50px;">
+                    <div class="logo-text">EMILIO AGUINALDO COLLEGE</div>
+                </div>
+            </a>
+            <h1>Enrollment Form</h1>
+        </header>
+
+        <div class="navigation">
+            <div class="step active"><span class="step-number">1</span> Personal Info</div>
+            <div class="step"><span class="step-number">2</span> Contact Info</div>
+            <div class="step"><span class="step-number">3</span> Family Info</div>
+            <div class="step"><span class="step-number">4</span> Education</div>
+            <div class="step"><span class="step-number">5</span> Requirements</div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-title">1. Personal Information</h2>
+            <p class="subtitle">Application Information</p>
+
+            <form th:action="@{/personal-information}" th:object="${student}" method="post">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="applicantStatus">Applicant Status*</label>
+                        <select id="applicantStatus" th:field="*{applicantStatus}">
+                            <option value="">Select</option>
+                            <option value="new">New Student</option>
+                            <option value="transferee">Transferee</option>
+                            <option value="returnee">Returning Student</option>
+                            <option value="cross_enrollee">Cross-Enrollee</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="termYear">Term / School Year *</label>
+                        <select id="termYear" th:field="*{termYear}">
+                            <option value="">Select</option>
+                            <option value="2024-2025_1st">A.Y. 2024-2025 - 1st Sem</option>
+                            <option value="2024-2025_2nd">A.Y. 2024-2025 - 2nd Sem</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label for="program1">Program (First Choice)*</label>
+                        <select id="program1" th:field="*{program1}">
+                            <option value="">Select</option>
+                            <option value="BSCS">BS Computer Science</option>
+                            <option value="BSIT">BS Information Technology</option>
+                            <option value="BSN">BS Nursing</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="program2">Program (Second Choice)</label>
+                        <select id="program2" th:field="*{program2}">
+                            <option value="">Select</option>
+                            <option value="BSCS">BS Computer Science</option>
+                            <option value="BSIT">BS Information Technology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="academicLevel">Academic Level*</label>
+                        <select id="academicLevel" th:field="*{academicLevel}">
+                            <option value="">Select</option>
+                            <option value="college">College</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="subtitle">Applicant Name</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" th:field="*{firstName}" placeholder="First Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Middle Name</label>
+                        <input type="text" th:field="*{middleName}" placeholder="Middle Name">
+                        <input type="checkbox" th:field="*{middleNameNA}"> <small>N/A</small>
+                    </div>
+                    <div class="form-group">
+                        <label>M.I.</label>
+                        <input type="text" th:field="*{middleInitial}" style="width: 50px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" th:field="*{lastName}" placeholder="Last Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Ext.</label>
+                        <input type="text" th:field="*{extension}" style="width: 60px;">
+                    </div>
+                </div>
+
+                <p class="subtitle">Birth Information</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" th:field="*{dob}">
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" th:field="*{age}" style="width: 70px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Place of Birth *</label>
+                        <input type="text" th:field="*{placeOfBirth}">
+                    </div>
+                    <div class="form-group">
+                        <label>Sex *</label>
+                        <select th:field="*{sex}">
+                            <option value="">Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="subtitle">Other Information</p>
+                <div class="form-row four-col">
+                    <div class="form-group">
+                        <label>Civil Status *</label>
+                        <select th:field="*{civilStatus}">
+                            <option value="single">Single</option>
+                            <option value="married">Married</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nationality *</label>
+                        <input type="text" th:field="*{nationality}" value="Filipino">
+                    </div>
+                    <div class="form-group">
+                        <label>Citizenship *</label>
+                        <input type="text" th:field="*{citizenship}" value="Filipino">
+                    </div>
+                    <div class="form-group">
+                        <label>Religion *</label>
+                        <select th:field="*{religion}">
+                            <option value="catholic">Catholic</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Monthly Family Income</label>
+                        <select th:field="*{monthlyIncome}">
+                            <option value="below_10k">Below 10k</option>
+                            <option value="above_10k">Above 10k</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-info-block" style="margin-top: 20px;">
+                    <div>
+                        <input type="checkbox" th:field="*{internationalStudent}">
+                        <label>International Student?</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" th:field="*{indigenous}">
+                        <label>Indigenous Group?</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" th:field="*{fourPs}">
+                        <label>4Ps Member?</label>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px; text-align: right;">
+                    <a th:href="@{/}" class="btn cancel-btn" style="padding: 10px; text-decoration: none; color: red;">CANCEL</a>
+                    
+                    <button type="submit" class="btn next-btn" style="padding: 10px 30px; background-color: green; color: white; border: none; cursor: pointer;">NEXT</button>
+                </div>
+
+            </form> </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Secure Payment Gateway</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/form.css}">
+    <style>
+        body { background-color: #f4f6f8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        .payment-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-top: 5px solid #d9534f; /* EAC Red */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* --- LEFT SIDE: SUMMARY --- */
+        .summary-panel {
+            background-color: #f8f9fa;
+            padding: 40px;
+            width: 35%;
+            border-right: 1px solid #eee;
+        }
+
+        .summary-panel h3 { margin-top: 0; color: #333; }
+        
+        /* Total Balance Display (Static) */
+        .balance-label { font-size: 0.9em; color: #777; margin-bottom: 5px; }
+        .balance-amount {
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .student-info-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        
+        .student-info-box label { display: block; font-size: 0.8em; color: #777; text-transform: uppercase; }
+        .student-info-box strong { display: block; color: #333; font-size: 1.1em; }
+
+        /* --- RIGHT SIDE: FORM --- */
+        .payment-panel { padding: 40px; width: 65%; }
+
+        /* Payment Method Tabs */
+        .payment-methods { display: flex; gap: 15px; margin-bottom: 30px; }
+        .method-card {
+            border: 2px solid #eee; padding: 15px 10px; border-radius: 8px; cursor: pointer; flex: 1;
+            text-align: center; font-weight: 600; color: #666; transition: all 0.2s ease;
+        }
+        .method-card:hover { border-color: #d9534f; color: #d9534f; }
+        .method-card.active { border-color: #d9534f; background-color: #fff5f5; color: #d9534f; }
+
+        /* Form Inputs */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
+        .form-group input { 
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; 
+            box-sizing: border-box; font-size: 16px;
+        }
+        
+        /* Highlight the editable amount input */
+        .amount-input {
+            border: 2px solid #28a745 !important;
+            font-size: 20px !important;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .btn-process {
+            background-color: #28a745; color: white; border: none; padding: 15px; width: 100%;
+            font-size: 18px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px;
+        }
+        .btn-process:hover { background-color: #218838; }
+
+        .secure-badge { text-align: center; margin-top: 20px; color: #777; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    
+    <div class="summary-panel">
+        <h3>Payment Details</h3>
+        
+        <div class="balance-label">Total Outstanding Balance</div>
+        <div class="balance-amount">
+            ₱ <span th:text="${#numbers.formatDecimal(amountToPay, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
+
+        <div class="student-info-box">
+            <div style="margin-bottom: 10px;">
+                <label>Paying for Student:</label>
+                <strong th:text="${student.firstName} + ' ' + ${student.lastName}">Student Name</strong>
+            </div>
+            <div>
+                <label>Reference Number:</label>
+                <strong th:text="${student.referenceNumber}" style="color: #d9534f;">REF-12345</strong>
+            </div>
+        </div>
+
+        <div style="margin-top: 50px;">
+            <a th:href="@{/account-status(year=4)}" style="font-size: 14px; color: #666; text-decoration: none;">
+                ← Cancel Payment
+            </a>
+        </div>
+    </div>
+
+    <div class="payment-panel">
+        <h2 style="margin-top: 0; margin-bottom: 20px;">Enter Amount & Pay</h2>
+        
+        <form th:action="@{/process-payment}" method="POST" id="paymentForm">
+            <input type="hidden" name="referenceNumber" th:value="${student.referenceNumber}">
+            <input type="hidden" id="selectedMethod" name="paymentMethod" value="Credit Card">
+
+            <div class="form-group">
+                <label for="amountInput">Amount to Pay (PHP)</label>
+                <input type="number" id="amountInput" name="amount" 
+                       th:value="${amountToPay}" 
+                       step="0.01" min="100" class="amount-input" 
+                       oninput="updateButtonText()" required>
+                <small style="color: #666;">Minimum payment: ₱ 100.00</small>
+            </div>
+
+            <div class="payment-methods">
+                <div class="method-card active" onclick="selectMethod('card', this)">
+                    💳 Credit Card
+                </div>
+                <div class="method-card" onclick="selectMethod('gcash', this)">
+                    📱 GCash / Maya
+                </div>
+                <div class="method-card" onclick="selectMethod('bank', this)">
+                    🏦 Bank Transfer
+                </div>
+            </div>
+
+            <div id="card-fields">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Expiry Date</label>
+                        <input type="text" placeholder="MM/YY" maxlength="5" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>CVV / CVC</label>
+                        <input type="password" placeholder="123" maxlength="3" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <input type="text" placeholder="Name as it appears on card" required>
+                </div>
+            </div>
+
+            <div id="other-fields" style="display: none; text-align: center; padding: 20px; background: #f9f9f9; border-radius: 4px; margin-bottom: 20px;">
+                <p>You will be redirected to the secure partner gateway.</p>
+            </div>
+
+            <button type="submit" class="btn-process" id="payButton">
+                Confirm Payment
+            </button>
+            
+            <div class="secure-badge">
+                🔒 Protected by 256-bit SSL Encryption
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Update button text when user types a new amount
+    function updateButtonText() {
+        const amount = document.getElementById('amountInput').value;
+        const btn = document.getElementById('payButton');
+        if (amount) {
+            // Format number to currency style
+            const formatted = parseFloat(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            btn.textContent = "Pay PHP " + formatted;
+        } else {
+            btn.textContent = "Enter Valid Amount";
+        }
+    }
+
+    function selectMethod(method, element) {
+        document.querySelectorAll('.method-card').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        
+        let methodText = "Credit Card";
+        if(method === 'gcash') methodText = "GCash / Maya";
+        if(method === 'bank') methodText = "Bank Transfer";
+        document.getElementById('selectedMethod').value = methodText;
+        
+        const cardFields = document.getElementById('card-fields');
+        const otherFields = document.getElementById('other-fields');
+        const inputs = cardFields.querySelectorAll('input');
+
+        if (method === 'card') {
+            cardFields.style.display = 'block';
+            otherFields.style.display = 'none';
+            inputs.forEach(input => input.required = true);
+        } else {
+            cardFields.style.display = 'none';
+            otherFields.style.display = 'block';
+            inputs.forEach(input => input.required = false);
+        }
+    }
+
+    // Initialize button text on load
+    window.onload = updateButtonText;
+</script>
+
+</body>
+</html>

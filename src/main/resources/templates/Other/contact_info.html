@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Form - Contact Information</title>
+    <link rel="stylesheet" th:href="@{/css/contactinfo.css}" /> 
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <div class="logo">
+                <img th:src="@{/images/eac_logo.png}" alt="Emilio Aguinaldo College Logo">
+                <div class="logo-text">EMILIO AGUINALDO COLLEGE</div>
+            </div>
+            <h1>Enrollment Form</h1>
+        </header>
+
+        <div class="navigation">
+            <div class="step complete">
+                <a th:href="@{/enroll}" class="step-link">
+                    <span class="step-number">1</span>
+                    Personal Information
+                </a>
+            </div>
+            <div class="step active">
+                <a th:href="@{/contact-info}" class="step-link">
+                    <span class="step-number">2</span>
+                    Address and Contact Information
+                </a>
+            </div>
+            <div class="step">
+                <a th:href="@{/family-info}" class="step-link">
+                    <span class="step-number">3</span>
+                    Family Information
+                </a>
+            </div>
+            <div class="step">
+                <a th:href="@{/educational-bg}" class="step-link">
+                    <span class="step-number">4</span>
+                    Educational Background
+                </a>
+            </div>
+            <div class="step">
+                <a th:href="@{/requirements}" class="step-link">
+                    <span class="step-number">5</span>
+                    Requirements
+                </a>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2 class="section-title">2. Address and Contact Information</h2>
+            
+            <form th:action="@{/contact-info}" th:object="${student}" method="post">
+
+                <p class="subtitle">Permanent Home Address</p>
+                <div class="form-row">
+                    <div class="form-group large">
+                        <label for="street">Street Address / House No. *</label>
+                        <input type="text" id="street" th:field="*{street}" placeholder="e.g., Unit 123, 456 Acacia St." required>
+                    </div>
+                </div>
+
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label for="city">City / Municipality *</label>
+                        <input type="text" id="city" th:field="*{city}" placeholder="e.g., Quezon City" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="province">Province *</label>
+                        <input type="text" id="province" th:field="*{province}" placeholder="e.g., Metro Manila" required>
+                    </div>
+                    <div class="form-group small">
+                        <label for="zip">Zip Code *</label>
+                        <input type="text" id="zip" th:field="*{zip}" placeholder="e.g., 1100" required>
+                    </div>
+                </div>
+                
+                <p class="subtitle">Contact Details</p>
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label for="mobile">Mobile Number *</label>
+                        <input type="tel" id="mobile" th:field="*{mobile}" placeholder="e.g., 0917xxxxxxx" pattern="[0-9]{11}" required>
+                        <small>Enter 11 digits (e.g., 09171234567)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="landline">Landline (Optional)</label>
+                        <input type="tel" id="landline" th:field="*{landline}" placeholder="e.g., (02) 8123 4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" th:field="*{email}" placeholder="e.g., student@email.com" required>
+                        <small>Used for official communications.</small>
+                    </div>
+                </div>
+
+                <p class="subtitle">Emergency Contact Person</p>
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label for="ecName">Full Name *</label>
+                        <input type="text" id="ecName" th:field="*{emergencyContactName}" placeholder="Name of Emergency Contact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ecRelationship">Relationship *</label>
+                        <input type="text" id="ecRelationship" th:field="*{emergencyContactRelationship}" placeholder="e.g., Mother, Guardian" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ecMobile">Mobile Number *</label>
+                        <input type="tel" id="ecMobile" th:field="*{emergencyContactMobile}" placeholder="e.g., 0917xxxxxxx" required>
+                    </div>
+                </div>
+
+                <div class="note">
+                    Fields with an asterisk (*) are required fields.<br>
+                    Please enter **N/A** if not applicable.
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/enroll}" class="btn cancel-btn back-btn">← PREVIOUS (Section 1)</a>
+                    
+                    <button type="submit" class="btn next-btn">SAVE & PROCEED (Section 3)</button>
+                </div>
+
+            </form> </div>
+    </div>
+</body>
+</html>

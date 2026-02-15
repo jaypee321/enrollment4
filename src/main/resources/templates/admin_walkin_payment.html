@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Admin - Process Walk-in</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* EAC BRANDING COLORS */
+        :root { 
+            --eac-maroon: #800000; 
+            --eac-maroon-dark: #600000;
+            --eac-gold: #d4af37; 
+        }
+        
+        /* Force all Card Headers to Maroon */
+        .card-header { 
+            background-color: var(--eac-maroon) !important; 
+            color: white !important; 
+            border-bottom: 2px solid var(--eac-gold);
+        }
+
+        /* Sync Button Correction */
+        .btn-sync { 
+            background-color: var(--eac-maroon) !important; 
+            color: white !important; 
+            border: none; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        .btn-sync:hover { background-color: var(--eac-maroon-dark) !important; }
+        
+        /* Post Payment Button */
+        .btn-post { 
+            background-color: var(--eac-maroon) !important; 
+            color: white !important; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+        .btn-post:hover { background-color: var(--eac-maroon-dark) !important; }
+
+        .status-paid { color: #27ae60; font-weight: bold; }
+        .status-pending { color: #c0392b; font-weight: bold; }
+        
+        .fee-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
+        .fee-item.total { 
+            border-bottom: none; 
+            margin-top: 10px; 
+            background: #fff5f5; 
+            padding: 10px; 
+            border-radius: 4px; 
+            border: 1px solid var(--eac-maroon); 
+        }
+        
+        .summary-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; margin-top: 20px; }
+        
+        /* Interactive installment row */
+        .clickable-amount { cursor: pointer; color: var(--eac-maroon); text-decoration: underline; font-weight: bold; }
+        .clickable-amount:hover { color: #ff0000; }
+
+        .info-label { color: var(--eac-maroon); font-weight: bold; margin-bottom: 5px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/emblem.png}" alt="EAC Logo" class="sidebar-logo">
+            <h3>EAC CASHIER</h3>
+        </div>
+        <nav class="nav-menu">
+            <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_CASHIER')">
+                <i class="fas fa-file-invoice-dollar"></i> Student Ledger
+            </a>
+            <a th:href="@{/admin/walkin-payment}" class="nav-item active">
+                <i class="fas fa-cash-register"></i> Process Payment
+            </a>
+            <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                <i class="fas fa-history"></i> Subject Logs
+            </a>
+            <div class="nav-divider"></div>
+            <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <h1 style="color: var(--eac-maroon);">Walk-in Payment Processing</h1>
+        </header>
+
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 25px; background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; border-left: 5px solid var(--eac-maroon);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-check-circle"></i> <strong th:text="${successMessage}"></strong></span>
+                <a th:if="${transactionId}" th:href="@{/print-receipt/{id}(id=${transactionId})}" target="_blank" class="btn-search" style="background-color: var(--eac-maroon); color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; font-size: 0.85rem;">
+                    <i class="fas fa-print"></i> PRINT RECEIPT
+                </a>
+            </div>
+        </div>
+
+        <div style="width: 100%; max-width: 1100px; margin: 0 auto;">
+            
+            <div class="card" style="border-top: 4px solid var(--eac-maroon); margin-bottom: 25px;">
+                <div class="card-body" style="padding: 20px;">
+                    <form th:action="@{/admin/walkin-payment}" method="GET" style="display: flex; gap: 10px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <label class="info-label"><i class="fas fa-user-graduate"></i> Search Student to Sync Ledger</label>
+                            <input type="text" name="keyword" class="search-input" style="width:100%; border: 1px solid var(--eac-maroon);" 
+                                   placeholder="Enter Student Number or Last Name..." th:value="${keyword}">
+                        </div>
+                        <button type="submit" class="btn-sync" style="height: 45px; padding: 0 25px;">
+                            <i class="fas fa-sync-alt"></i> SYNC DATA
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${student != null}">
+                <div class="card" style="background: #fff; border-left: 10px solid var(--eac-maroon); margin-bottom: 25px; box-shadow: 0 4px 12px rgba(128,0,0,0.1);">
+                    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; padding: 25px;">
+                        <div>
+                            <h2 style="margin: 0; color: var(--eac-maroon); text-transform: uppercase;" th:text="${student.lastName + ', ' + student.firstName}"></h2>
+                            <p style="margin: 8px 0 0; color: #555; font-weight: 600;">
+                                <i class="fas fa-id-card"></i> <span th:text="${student.studentNumber}"></span> | 
+                                <i class="fas fa-graduation-cap"></i> <span th:text="${student.program1}"></span>
+                            </p>
+                        </div>
+                        <div style="background: #fff5f5; padding: 15px; border-radius: 8px; border: 2px solid var(--eac-maroon); text-align: center; min-width: 240px;">
+                            <label style="font-size: 0.75rem; color: var(--eac-maroon); font-weight: 800; display: block; margin-bottom: 5px;">OUTSTANDING BALANCE</label>
+                            <span style="font-size: 2.2rem; color: #c0392b; font-weight: 900;" th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-cash-register"></i> <h3>Post Walk-in Transaction</h3></div>
+                        <div class="card-body" style="padding: 25px;">
+                            <form th:action="@{/admin/process-walkin}" method="POST">
+                                <input type="hidden" name="studentIdentifier" th:value="${student.studentNumber}">
+
+                                <div style="background-color: #fffafb; padding: 25px; border-radius: 8px; border: 2px solid var(--eac-maroon); margin-bottom: 20px;">
+                                    <label class="info-label" style="text-align: center;">PAYMENT AMOUNT (PHP)</label>
+                                    <input type="number" id="paymentAmountInput" name="amount" class="search-input" 
+                                           style="width: 100%; font-size: 2.5rem; text-align: center; color: var(--eac-maroon); font-weight: 800; border: none; background: transparent;" 
+                                           placeholder="0.00" step="0.01" min="1" required>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                    <div>
+                                        <label class="info-label">Payment Method</label>
+                                        <select name="paymentType" class="search-input" style="width:100%; height: 45px; border: 1px solid var(--eac-maroon);">
+                                            <option value="CASH">Cash (OTC)</option>
+                                            <option value="CHECK">Check</option>
+                                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="info-label">Transaction Type</label>
+                                        <select id="mainCategory" class="search-input" style="width:100%; height: 45px; border: 1px solid var(--eac-maroon);" onchange="updateRemarks()">
+                                            <option value="Tuition Fee">Tuition Fee</option>
+                                            <option value="Certificates / Documents">Certificates / Documents</option>
+                                            <option value="Parking">Parking</option>
+                                            <option value="Rental">Rental</option>
+                                            <option value="Dormitory">Dormitory</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div id="subCategoryDiv" style="display:none; margin-bottom: 20px;">
+                                    <label class="info-label">Select Specific Document</label>
+                                    <select id="subCategory" class="search-input" style="width:100%; height: 45px; border: 1px solid var(--eac-maroon);" onchange="updateRemarks()">
+                                        <option value="TOR">Transcript of Records (TOR)</option>
+                                        <option value="Completion Form">Completion Form</option>
+                                        <option value="Certification">General Certification</option>
+                                    </select>
+                                </div>
+
+                                <input type="hidden" name="remarks" id="remarksInput" value="Tuition Fee">
+
+                                <button type="submit" class="btn-post" style="width: 100%; padding: 20px; font-size: 1.2rem; border-radius: 4px;">
+                                    CONFIRM & SAVE PAYMENT <i class="fas fa-save" style="margin-left: 10px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 25px;">
+                        
+                        <div class="card">
+                            <div class="card-header"><i class="fas fa-clock"></i> <h3>Installment Checklist</h3></div>
+                            <div class="card-body" style="padding: 0;">
+                                <table class="modern-table">
+                                    <thead>
+                                        <tr style="background: #fff5f5;">
+                                            <th>Term</th>
+                                            <th style="text-align: right;">Due Amount</th>
+                                            <th style="text-align: center;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="inst : ${installments}">
+                                            <td th:text="${inst.label}" style="font-size: 0.85rem; font-weight: bold; color: #333;"></td>
+                                            <td style="text-align: right;">
+                                                <span class="clickable-amount" 
+                                                      th:text="${#numbers.formatDecimal(inst.amount, 1, 'COMMA', 2, 'POINT')}"
+                                                      th:onclick="'copyAmount(' + ${inst.amount} + ')'">
+                                                </span>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span th:text="${inst.status}" 
+                                                      th:class="${inst.status == 'PAID' ? 'status-paid' : 'status-pending'}" 
+                                                      style="font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; border: 1px solid;"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header"><i class="fas fa-file-invoice"></i> <h3>Fee Breakdown</h3></div>
+                            <div class="card-body">
+                                <div class="fee-item">
+                                    <span style="font-weight: 600;">Tuition Fee (<span th:text="${totalUnits}">0</span> units)</span>
+                                    <span th:text="${#numbers.formatDecimal(tuitionTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+                                </div>
+                                <div class="fee-item">
+                                    <span style="font-weight: 600;">Misc / Other Fees</span>
+                                    <span>25,993.00</span>
+                                </div>
+                                <div class="fee-item total">
+                                    <strong style="color: var(--eac-maroon);">TOTAL ASSESSMENT</strong>
+                                    <strong style="color: var(--eac-maroon);" th:text="${#numbers.formatDecimal(totalAssessment, 1, 'COMMA', 2, 'POINT')}"></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${student == null and errorMessage == null}" style="text-align:center; padding: 80px; color:#bdc3c7;">
+                <i class="fas fa-receipt" style="font-size: 5rem; margin-bottom: 20px; color: var(--eac-maroon); opacity: 0.2;"></i>
+                <h2 style="color: #95a5a6;">EAC Payment Terminal</h2>
+                <p>Please enter a Student Number above to synchronize the account.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    function updateRemarks() {
+        var main = document.getElementById("mainCategory").value;
+        var sub = document.getElementById("subCategory").value;
+        var input = document.getElementById("remarksInput");
+        var subDiv = document.getElementById("subCategoryDiv");
+
+        if (main === "Certificates / Documents") {
+            subDiv.style.display = "block";
+            input.value = "Certificate - " + sub; 
+        } else {
+            subDiv.style.display = "none";
+            input.value = main;
+        }
+    }
+
+    function copyAmount(val) {
+        document.getElementById("paymentAmountInput").value = val.toFixed(2);
+        const input = document.getElementById("paymentAmountInput").parentElement;
+        input.style.backgroundColor = "#fff9c4";
+        setTimeout(() => { input.style.backgroundColor = "#fffafb"; }, 500);
+    }
+</script>
+
+</body>
+</html>

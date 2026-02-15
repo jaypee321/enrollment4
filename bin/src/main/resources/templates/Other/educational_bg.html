@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Form - Educational Background</title>
+    <link rel="stylesheet" type="text/css" href="/css/form.css">
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <a href="/" class="header-link"> 
+               <div class="logo">
+                   <img th:src="@{/images/emblem.png}" alt="Emilio Aguinaldo College Logo">
+                   <div class="logo-text">EMILIO AGUINALDO COLLEGE</div>
+               </div>
+            </a>
+            <h1>Enrollment Form</h1>
+        </header>
+
+        <div class="navigation">
+            <div class="step complete"><span class="step-number">1</span> Personal Info</div>
+            <div class="step complete"><span class="step-number">2</span> Contact Info</div>
+            <div class="step complete"><span class="step-number">3</span> Family Info</div>
+            <div class="step active"><span class="step-number">4</span> Educational BG</div>
+            <div class="step"><span class="step-number">5</span> Requirements</div>
+        </div>
+        
+        <form th:action="@{/educational-bg}" th:object="${student}" method="POST">
+        
+        <div class="form-section">
+            <h2 class="section-title">4. Educational Background</h2>
+            
+            <p class="subtitle">Elementary Education</p>
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label>Name of School *</label>
+                    <input type="text" th:field="*{elementarySchool}" placeholder="Enter Elementary School Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Year Graduated *</label>
+                    <input type="text" th:field="*{elementaryYear}" placeholder="e.g., 2016" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group large">
+                    <label>School Address</label>
+                    <input type="text" th:field="*{elementaryAddress}" placeholder="Enter School Address">
+                </div>
+            </div>
+
+            <p class="subtitle">Junior High School</p>
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label>Name of School *</label>
+                    <input type="text" th:field="*{jhsSchool}" placeholder="Enter JHS Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Year Graduated *</label>
+                    <input type="text" th:field="*{jhsYear}" placeholder="e.g., 2020" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group large">
+                    <label>School Address</label>
+                    <input type="text" th:field="*{jhsAddress}" placeholder="Enter School Address">
+                </div>
+            </div>
+
+            <p class="subtitle">Senior High School</p>
+            <div class="form-row three-col">
+                <div class="form-group">
+                    <label>Name of School *</label>
+                    <input type="text" th:field="*{shsSchool}" placeholder="Enter SHS Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Track/Strand *</label>
+                    <input type="text" th:field="*{shsTrack}" placeholder="e.g., STEM, ABM, HUMSS" required>
+                </div>
+                <div class="form-group">
+                    <label>Year Graduated *</label>
+                    <input type="text" th:field="*{shsYear}" placeholder="e.g., 2022" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group large">
+                    <label>School Address</label>
+                    <input type="text" th:field="*{shsAddress}" placeholder="Enter School Address">
+                </div>
+            </div>
+
+            <p class="subtitle">College / Previous School (For Transferees/Second Degree)</p>
+            <div class="form-info-block">
+                <p>Fill this section only if you are a transferee or second-degree applicant. Otherwise, leave blank.</p>
+            </div>
+            <div class="form-row three-col">
+                <div class="form-group">
+                    <label>Name of Last School</label>
+                    <input type="text" th:field="*{lastSchool}" placeholder="Enter Last School Attended">
+                </div>
+                <div class="form-group">
+                    <label>Course/Program Taken</label>
+                    <input type="text" th:field="*{courseTaken}" placeholder="e.g., BS Nursing">
+                </div>
+                <div class="form-group">
+                    <label>Year/Level</label>
+                    <input type="text" th:field="*{lastSchoolYear}" placeholder="e.g., 1st Year">
+                </div>
+            </div>
+
+            <div class="note">
+                Fields with an asterisk (*) are required.<br>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/family-info}" class="btn cancel-btn back-btn">← PREVIOUS (Section 3)</a>
+                
+                <button type="submit" class="btn next-btn">SAVE & PROCEED (Section 5) →</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</body>
+</html>

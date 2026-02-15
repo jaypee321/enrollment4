@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>EAC Cashier - Master Terminal</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single { height: 45px; border: 1px solid #ddd; display: flex; align-items: center; border-radius: 4px; }
+        .select2-container { flex: 1; margin-right: 10px; }
+        .status-paid { color: #27ae60; font-weight: bold; }
+        .status-pending { color: #c0392b; font-weight: bold; }
+        .fee-sub-item { padding-left: 20px; font-size: 0.85rem; color: #777; border: none; padding-top: 2px; padding-bottom: 2px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/emblem.png}" alt="EAC Logo" class="sidebar-logo">
+            <h3>EAC ADVISING</h3>
+        </div>
+		<nav class="nav-menu">
+		    <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+		        <i class="fas fa-chart-line"></i> Dashboard
+		    </a>
+
+		    <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_CASHIER')">
+		        <i class="fas fa-file-invoice-dollar"></i> Student Ledger
+		    </a>
+
+		    <a th:href="@{/admin/walkin-payment}" class="nav-item active" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_CASHIER')">>
+		        <i class="fas fa-cash-register"></i> Process Payment
+		    </a>
+
+		    <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+		        <i class="fas fa-history"></i> Subject Logs
+		    </a>
+
+		    <div class="nav-divider"></div>
+		    <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+		</nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header"><h1>Assessment & Collection Terminal</h1></header>
+		
+		<div th:if="${errorMessage}" class="alert" 
+		         style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+		        <i class="fas fa-exclamation-circle"></i> <strong th:text="${errorMessage}"></strong>
+		    </div>
+
+		    <div th:if="${successMessage}" class="alert" 
+		         style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+		        <i class="fas fa-check-circle"></i> <strong th:text="${successMessage}"></strong>
+		    </div>
+
+        <div class="admin-search-bar">
+            <form th:action="@{/admin/cashier}" method="GET" style="display:flex; width:100%; gap:10px;">
+                <input type="text" name="keyword" class="search-input" placeholder="Search Student Number or Last Name..." th:value="${keyword}" required>
+                <button type="submit" class="btn-search"><i class="fas fa-search"></i> SEARCH</button>
+            </form>
+        </div>
+
+        <div th:if="${student != null}">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-user"></i> <h3>Student Profile</h3></div>
+                <div class="profile-grid">
+                    <div class="profile-item"><label>Name</label><span th:text="${student.lastName + ', ' + student.firstName}"></span></div>
+                    <div class="profile-item"><label>Student ID</label><span th:text="${student.studentNumber}"></span></div>
+                    <div class="profile-item"><label>Program</label><span th:text="${student.program1}"></span></div>
+                    <div class="profile-item"><label>Status</label><span th:text="${student.applicantStatus}" th:style="${student.applicantStatus == 'ENROLLED' ? 'color: green' : 'color: orange'}"></span></div>
+                </div>
+            </div>
+
+            <div class="card" id="enlistment-section">
+                <div class="card-header"><i class="fas fa-book"></i> <h3>Subject Enlistment Management</h3></div>
+                <div class="card-body" style="padding: 20px;">
+					<div sec:authorize="hasAnyRole('ADMIN','FACULTY')" class="card-body" style="padding: 20px; border-bottom: 1px solid #eee;">
+						
+                    <form th:action="@{/admin/enlist-subject}" method="POST" style="display:flex; margin-bottom:20px;">
+                        <input type="hidden" name="studentId" th:value="${student.id}">
+                        <select name="courseId" id="courseSelect" class="js-searchable" required>
+                            <option value="">-- Search Subject Code or Title --</option>
+                            <option th:each="c : ${allCourses}" 
+                                    th:value="${c.course_id}" 
+                                    th:disabled="${c.enrolled_count >= c.max_capacity}"
+                                    th:text="${c.course_code + ' - ' + c.course_title + ' [' + (c.schedule ?: 'TBA') + '] (' + c.enrolled_count + '/' + c.max_capacity + ')'}">
+                            </option>
+                        </select>
+                        <button type="submit" onclick="confirmEnlistment(event)" class="btn-search" style="background: #27ae60;">Add Subject</button>
+                    </form>
+                   </div>
+                    <form id="bulkDeleteForm" th:action="@{/admin/remove-subjects-bulk}" method="POST" onsubmit="return confirmBulkDelete()">
+                        <input type="hidden" name="studentNumber" th:value="${student.studentNumber}">
+                        <button sec:authorize="hasAnyRole('ADMIN', 'FACULTY')" type="submit" class="btn-search" style="background-color: #c0392b; margin-bottom: 15px; font-size: 0.8rem; width: auto;">
+                            <i class="fas fa-trash-alt"></i> Remove Selected
+                        </button>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+									<th sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_FACULTY')" style="width: 40px;">
+									                    <input type="checkbox" id="checkAll" onclick="toggleAll(this)">
+									                </th>
+                                    <th>Code</th>
+                                    <th>Description</th>
+                                    <th style="text-align:center;">Units</th>
+                                    <th>Schedule</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${enlistedSubjects}">
+									<td sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_FACULTY')">
+									                    <input type="checkbox" name="enlistmentIds" th:value="${s.enlistment_id}" class="subject-checkbox">
+									                </td>
+                                    <td th:text="${s.course_code}" style="font-weight:bold;"></td>
+                                    <td th:text="${s.course_title}"></td>
+                                    <td th:text="${s.credit_units}" style="text-align:center;"></td>
+                                    <td th:text="${s.schedule ?: 'TBA'}" style="font-size: 0.8rem; color: #666;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px;">
+                
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-calculator"></i> <h3>Current Assessment Breakdown</h3></div>
+                    <div class="fee-list" style="padding: 20px;">
+                        <div class="fee-item">
+                            <span>Tuition Fee (<span th:text="${totalUnits}">0</span> Units <th:block th:if="${totalUnits > 24}">- Capped at 24</th:block>)</span>
+                            <span th:text="${#numbers.formatDecimal(tuitionTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+
+                        <div class="fee-item" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">
+                            <span style="font-weight: 600;">Miscellaneous Fees</span>
+                            <span style="font-weight: 600;">7,431.00</span>
+                        </div>
+                        <div class="fee-sub-item">
+                            <div class="fee-item" style="border:none;"><span>Athletics / AV Fee</span><span>1,474.00</span></div>
+                            <div class="fee-item" style="border:none;"><span>Med-Dental / Reg Fee</span><span>1,809.00</span></div>
+                            <div class="fee-item" style="border:none;"><span>Guidance / Energy</span><span>4,148.00</span></div>
+                        </div>
+
+                        <div class="fee-item" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">
+                            <span style="font-weight: 600;">Other Fees</span>
+                            <span style="font-weight: 600;">18,562.00</span>
+                        </div>
+                        <div class="fee-sub-item">
+                            <div class="fee-item" style="border:none;"><span>Computer Hands-On</span><span>13,930.00</span></div>
+                            <div class="fee-item" style="border:none;"><span>Developmental Fees</span><span>4,632.00</span></div>
+                        </div>
+
+                        <div class="fee-item" style="margin-top: 15px; border-top: 2px solid #800000; padding-top: 10px; color: #d35400; font-weight: bold;">
+                            <span>Total Payments Recorded</span>
+                            <span th:text="' ' + ${#numbers.formatDecimal((totalOnlinePayments ?: 0) + 3000, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+
+                        <div class="fee-item total" style="background: #fdf2f2; padding: 10px; border-radius: 4px;">
+                            <span style="color: #800000;">OUTSTANDING BALANCE</span>
+                            <span style="color: #800000; font-size: 1.2rem;" th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                    </div>
+                </div>
+
+				<div class="card">
+				    <div class="card-header"><i class="fas fa-calendar-alt"></i> <h3>Payment Schedule & Status</h3></div>
+				    <div class="card-body" style="padding: 0;">
+				        <table class="modern-table" style="margin-bottom: 0; border-bottom: none;">
+				            <thead style="background-color: #f4f4f4;">
+				                <tr>
+				                    <th style="padding: 12px;">Installment</th>
+				                    <th style="text-align: right; padding: 12px;">Amount Due</th>
+				                    <th style="text-align: center; padding: 12px;">Status</th>
+				                </tr>
+				            </thead>
+				            <tbody>
+				                <tr>
+				                    <td style="padding: 12px;">Downpayment</td>
+				                    <td style="text-align: right; padding: 12px; font-weight: bold;" 
+				                        th:text="${#numbers.formatDecimal(downpaymentAmount, 1, 'COMMA', 2, 'POINT')}">3,000.00</td>
+				                    <td style="text-align: center; padding: 12px;">
+				                        <span th:text="${downpaymentStatus}" 
+				                              th:style="${downpaymentStatus == 'PAID' ? 'color: green; font-weight: bold;' : 'color: red; font-weight: bold;'}"></span>
+				                    </td>
+				                </tr>
+
+				                <tr th:each="inst : ${installments}">
+				                    <td th:text="${inst.label}" style="padding: 12px;"></td>
+				                    <td style="text-align: right; padding: 12px; font-weight: bold;" 
+				                        th:text="${#numbers.formatDecimal(inst.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+				                    <td style="text-align: center; padding: 12px;">
+				                        <span th:text="${inst.status}" 
+				                              th:style="${inst.status == 'PAID' ? 'color: green; font-weight: bold;' : 'color: red; font-weight: bold;'}"></span>
+				                    </td>
+				                </tr>
+				            </tbody>
+				        </table>
+
+				        <div class="fee-item total" style="background: #fdf2f2; padding: 15px; border-top: 2px solid #800000; display: flex; justify-content: space-between; align-items: center;">
+				            <span style="color: #800000; font-weight: bold; letter-spacing: 1px;">TOTAL OUTSTANDING BALANCE</span>
+				            <span style="color: #800000; font-size: 1.4rem; font-weight: 800;" 
+				                  th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+				        </div>
+				    </div>
+				</div>
+
+				<div class="card" style="margin-top: 15px;">
+				                <details open> <summary class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none;">
+				                        <div><i class="fas fa-history"></i> <h3 style="display: inline; margin-left: 10px;">Transaction History</h3></div>
+				                        <span th:if="${not #lists.isEmpty(paymentHistory)}" style="background: #27ae60; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem;">
+				                            Total: <span th:text="'₱' + ${#numbers.formatDecimal(#aggregates.sum(paymentHistory.![amount]), 1, 'COMMA', 2, 'POINT')}"></span>
+				                        </span>
+				                        <i class="fas fa-chevron-down"></i>
+				                    </summary>
+				                    
+				                    <div class="card-body" style="padding: 0; border-top: 1px solid #eee;">
+				                        
+				                        <div style="padding: 15px; border-bottom: 1px solid #eee; background: #f9f9f9; display:flex; align-items:center; gap: 10px;">
+				                            <label style="font-weight: bold; color: #555;"><i class="fas fa-filter"></i> Filter by Type:</label>
+				                            <select id="historyFilter" class="search-input" style="width: 250px; height: 35px; padding: 0 10px;" onchange="filterHistory()">
+				                                <option value="ALL">All Transactions</option>
+				                                <option value="Tuition Fee">Tuition Fee</option>
+				                                <option value="Certificate">Certificates / Documents</option>
+				                                <option value="Parking">Parking</option>
+				                                <option value="Rental">Rental</option>
+				                                <option value="Dormitory">Dormitory</option>
+				                                <option value="Special Funds">Special Funds</option>
+				                            </select>
+				                        </div>
+
+				                        <table class="modern-table" id="historyTable">
+				                            <thead>
+				                                <tr>
+				                                    <th>Date & Time</th>
+				                                    <th>Type / Remarks</th> <th>Method</th>
+				                                    <th style="text-align: right;">Amount</th>
+				                                </tr>
+				                            </thead>
+				                            <tbody>
+				                                <tr th:each="pay : ${paymentHistory}" class="history-row">
+				                                    <td th:text="${#temporals.format(pay.payment_date, 'MMM dd, yyyy hh:mm a')}"></td>
+				                                    
+				                                    <td class="row-type" style="font-weight: 500; color: #444;" 
+				                                        th:text="${pay.remarks != null and pay.remarks != '' ? pay.remarks : 'Tuition Fee'}">
+				                                    </td>
+				                                    
+				                                    <td th:text="${pay.payment_method}"></td>
+				                                    <td class="status-paid" style="text-align: right;" th:text="${#numbers.formatDecimal(pay.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+				                                </tr>
+				                            </tbody>
+				                        </table>
+				                    </div>
+				                </details>
+				            </div>
+        </div>
+
+        <div th:if="${student == null and errorMessage == null}" style="text-align:center; padding: 100px; color:#999;">
+            <i class="fas fa-receipt" style="font-size: 4rem; margin-bottom: 20px;"></i>
+            <h2>EAC Cashier Terminal</h2>
+            <p>Search for a Student Number or Last Name to begin management.</p>
+        </div>
+    </main>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:inline="javascript">
+    $(document).ready(function() {
+        // Init Select2
+        $('.js-searchable').select2({ placeholder: "Search subject...", width: 'resolve' });
+
+        // Waitlist Logic from Code 1
+        var showWaitlist = [[${showWaitlistPrompt}]];
+        var pendingCourse = [[${pendingCourseId}]];
+        var studentId = [[${student != null ? student.id : null}]];
+		
+        if (showWaitlist) {
+            Swal.fire({
+                title: 'Section Full!', text: "Add to waitlist?", icon: 'question',
+                showCancelButton: true, confirmButtonText: 'Yes', confirmButtonColor: '#27ae60'
+            }).then((result) => {
+				if (result.isConfirmed) {
+				    Swal.fire({
+				        title: 'Enlisting Subject...',
+				        html: 'Recalculating fees and checking schedule.',
+				        allowOutsideClick: false,
+				        showConfirmButton: false,
+				        didOpen: () => {
+				            Swal.showLoading();
+				        }
+				    });
+				    document.getElementById('enlistForm').submit();
+				}
+            });
+        }
+    });
+	
+	setTimeout(function() {
+	        $('.alert').fadeOut('slow');
+	    }, 3000);
+		
+		function confirmAddSubject(event) {
+		    // 1. Prevent the page from refreshing immediately
+		    if (event) event.preventDefault();
+
+		    const courseSelect = document.getElementById('courseSelect');
+		    const courseId = courseSelect.value;
+
+		    // 2. Validation: Check if a subject is picked
+		    if (!courseId) {
+		        Swal.fire('Warning', 'Please select a subject to add.', 'warning');
+		        return false;
+		    }
+
+		    const subjectName = courseSelect.options[courseSelect.selectedIndex].text;
+
+		    // 3. Confirmation Dialog
+		    Swal.fire({
+		        title: 'Confirm Enlistment',
+		        html: `Add <b>${subjectName}</b> to this student?`,
+		        icon: 'question',
+		        showCancelButton: true,
+		        confirmButtonColor: '#27ae60',
+		        cancelButtonColor: '#7f8c8d',
+		        confirmButtonText: 'Yes, Enlist'
+		    }).then((result) => {
+		        if (result.isConfirmed) {
+		            // 4. Show loading so the user doesn't click twice while it's "slow"
+		            Swal.fire({
+		                title: 'Enlisting...',
+		                text: 'Calculating schedule and fees.',
+		                allowOutsideClick: false,
+		                didOpen: () => {
+		                    Swal.showLoading();
+		                }
+		            });
+		            // 5. Manually submit the form
+		            document.getElementById('enlistForm').submit();
+		        }
+		    });
+		}
+
+    // Bulk Delete Logic from Code 2
+    function toggleAll(source) {
+        const checkboxes = document.getElementsByClassName('subject-checkbox');
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+
+    function confirmBulkDelete() {
+        const checkedCount = document.querySelectorAll('.subject-checkbox:checked').length;
+        if (checkedCount === 0) {
+            Swal.fire('Warning', 'Please select at least one subject.', 'warning');
+            return false;
+        }
+        return confirm("Are you sure you want to remove " + checkedCount + " selected subject(s)?");
+    }
+	
+	
+	function filterHistory() {
+	        var filter = document.getElementById("historyFilter").value.toUpperCase();
+	        var rows = document.getElementsByClassName("history-row");
+
+	        for (var i = 0; i < rows.length; i++) {
+	            var typeCell = rows[i].querySelector(".row-type");
+	            var typeText = typeCell ? typeCell.textContent.toUpperCase() : "";
+
+	            // Logic: If filter is ALL, show everything.
+	            // If filter is specific, check if the text INCLUDES the filter word (e.g. "Certificate" matches "Certificate - TOR")
+	            if (filter === "ALL" || typeText.includes(filter)) {
+	                rows[i].style.display = "";
+	            } else {
+	                rows[i].style.display = "none";
+	            }
+	        }
+	    }
+	
+</script>
+
+
+</body>
+</html>

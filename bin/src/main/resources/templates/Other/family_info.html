@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Form - Family Information</title>
+    <link rel="stylesheet" type="text/css" href="/css/form.css">
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <a href="/" class="header-link"> 
+               <div class="logo">
+                   <img th:src="@{/images/emblem.png}" alt="Emilio Aguinaldo College Logo">
+                   <div class="logo-text">EMILIO AGUINALDO COLLEGE</div>
+               </div>
+            </a>
+            <h1>Enrollment Form</h1>
+        </header>
+
+        <div class="navigation">
+            <div class="step complete"><span class="step-number">1</span> Personal Info</div>
+            <div class="step complete"><span class="step-number">2</span> Contact Info</div>
+            <div class="step active"><span class="step-number">3</span> Family Info</div>
+            <div class="step"><span class="step-number">4</span> Educational BG</div>
+            <div class="step"><span class="step-number">5</span> Requirements</div>
+        </div>
+        
+        <form th:action="@{/family-info}" th:object="${student}" method="POST">
+        
+        <div class="form-section">
+            <h2 class="section-title">3. Family Information</h2>
+            
+            <p class="subtitle">Father's Information</p>
+            <div class="form-row three-col">
+                <div class="form-group">
+                    <label for="fatherName">Full Name *</label>
+                    <input type="text" id="fatherName" th:field="*{fatherName}" placeholder="Enter Father's Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="fatherOccupation">Occupation</label>
+                    <input type="text" id="fatherOccupation" th:field="*{fatherOccupation}" placeholder="Enter Occupation">
+                </div>
+                <div class="form-group">
+                    <label for="fatherContact">Contact Number</label>
+                    <input type="tel" id="fatherContact" th:field="*{fatherContact}" placeholder="e.g., 09xx xxx xxxx">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group large">
+                    <label for="fatherAddress">Address (if different from applicant)</label>
+                    <input type="text" id="fatherAddress" th:field="*{fatherAddress}" placeholder="Enter address or N/A">
+                </div>
+            </div>
+
+            <p class="subtitle">Mother's Information (Maiden Name)</p>
+            <div class="form-row three-col">
+                <div class="form-group">
+                    <label for="motherName">Full Maiden Name *</label>
+                    <input type="text" id="motherName" th:field="*{motherName}" placeholder="Enter Mother's Maiden Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="motherOccupation">Occupation</label>
+                    <input type="text" id="motherOccupation" th:field="*{motherOccupation}" placeholder="Enter Occupation">
+                </div>
+                <div class="form-group">
+                    <label for="motherContact">Contact Number</label>
+                    <input type="tel" id="motherContact" th:field="*{motherContact}" placeholder="e.g., 09xx xxx xxxx">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group large">
+                    <label for="motherAddress">Address (if different from applicant)</label>
+                    <input type="text" id="motherAddress" th:field="*{motherAddress}" placeholder="Enter address or N/A">
+                </div>
+            </div>
+
+            <p class="subtitle">Guardian Information (If applicable)</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="guardianName">Guardian's Full Name</label>
+                    <input type="text" id="guardianName" th:field="*{guardianName}" placeholder="Enter Guardian's Name or N/A">
+                </div>
+                <div class="form-group">
+                    <label for="guardianRelationship">Relationship to Applicant</label>
+                    <input type="text" id="guardianRelationship" th:field="*{guardianRelationship}" placeholder="e.g., Aunt, Uncle">
+                </div>
+                <div class="form-group">
+                    <label for="guardianContact">Contact Number</label>
+                    <input type="tel" id="guardianContact" th:field="*{guardianContact}" placeholder="e.g., 09xx xxx xxxx">
+                </div>
+            </div>
+
+            <p class="subtitle">Siblings Information</p>
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label for="siblingCount">Number of Siblings *</label>
+                    <input type="number" id="siblingCount" th:field="*{siblingCount}" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="siblingOrder">Applicant's Order among Siblings *</label>
+                    <select id="siblingOrder" th:field="*{siblingOrder}" required>
+                        <option value="">Select</option>
+                        <option value="eldest">Eldest</option>
+                        <option value="middle">Middle</option>
+                        <option value="youngest">Youngest</option>
+                        <option value="only">Only Child</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="note">
+                Fields with an asterisk (*) are required fields.<br>
+                If not applicable, please enter **N/A** in text fields.
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/contact-info}" class="btn cancel-btn back-btn">← PREVIOUS (Section 2)</a>
+                
+                <button type="submit" class="btn next-btn">SAVE & PROCEED (Section 4) →</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</body>
+</html>

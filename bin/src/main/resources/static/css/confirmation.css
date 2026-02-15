@@ -1,0 +1,101 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.confirmation-container {
+    background-color: white;
+    padding: 50px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 500px;
+    text-align: center;
+    border-top: 5px solid #A00000; /* Deep Red Brand Color */
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #38761D; /* Success Green */
+    margin-bottom: 20px;
+    border: 3px solid #38761D;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.message {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.info-box {
+    background-color: #fff8e1; /* Light yellow background for emphasis */
+    border: 1px solid #ffe0b2;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 30px;
+}
+
+.ref-number {
+    color: #A00000;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.note {
+    font-size: 0.9em;
+    color: #888;
+    margin-top: 5px;
+}
+
+.next-steps {
+    text-align: left;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+.next-steps h3 {
+    margin-top: 0;
+    color: #444;
+    font-size: 1.1em;
+}
+
+.next-steps ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+    color: #555;
+}
+
+.next-steps li {
+    margin-bottom: 10px;
+}
+
+.btn-home {
+    display: inline-block;
+    padding: 12px 30px;
+    background-color: #A00000;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.btn-home:hover {
+    background-color: #800000;
+}
