@@ -34,19 +34,25 @@ public class FinancialService {
         // --- ADDED: 24-UNIT CAP LOGIC ---
         int unitsToCharge = Math.min(totalUnits, 24); 
         
-        // 2. Fees Calculation
+        
+     // 2. Fees Calculation
         double ratePerUnit = 1500.00;
         double tuitionFee = unitsToCharge * ratePerUnit; // Capped tuition
 
-        double miscTotal = 7431.00;
-        double otherFeesTotal = 18562.00;
+        // NEW: Only apply Misc and Other fees if the student actually enrolled in subjects
+        double miscTotal = (totalUnits > 0) ? 7431.00 : 0.00;
+        double otherFeesTotal = (totalUnits > 0) ? 18562.00 : 0.00;
 
         // 3. Total Assessment
         double totalAssessment = tuitionFee + miscTotal + otherFeesTotal;
 
-        // 4. Get Payments
-        Double paymentsFromDb = paymentRepository.getTotalPaymentsByReferenceNumber(student.getStudentNumber());
-        double totalPaid = (paymentsFromDb != null) ? paymentsFromDb : 0.00;
+        // ---> FIXED: 4. Get Payments (ONLY DEDUCT TUITION FEES FROM BALANCE) <---
+        Double tuitionPaymentsFromDb = jdbcTemplate.queryForObject(
+            "SELECT SUM(amount) FROM payments WHERE reference_number = ? " +
+            "AND (remarks = 'Tuition Fee' OR remarks IS NULL OR remarks = '')", 
+            Double.class, student.getStudentNumber());
+            
+        double totalPaid = (tuitionPaymentsFromDb != null) ? tuitionPaymentsFromDb : 0.00;
         double outstandingBalance = totalAssessment - totalPaid;
 
         // 5. INSTALLMENT LOGIC (8 Installments)
@@ -91,27 +97,27 @@ public class FinancialService {
         model.addAttribute("downpaymentStatus", totalPaid >= downpaymentFixed ? "PAID" : "UNPAID");
         model.addAttribute("installments", installmentSchedule);
 
-        // 7. Enlisted Subjects Query
+        // ---> FIXED: 7. Enlisted Subjects Query (Now uses se.section_id and COALESCE TBA) <---
         List<Map<String, Object>> enlistedSubjects = jdbcTemplate.queryForList(
             "SELECT se.enlistment_id, c.course_code, c.course_title, c.credit_units, " +
-            "GROUP_CONCAT(CONCAT(" +
+            "COALESCE(GROUP_CONCAT(CONCAT(" +
             "  CASE sch.day_of_week " +
             "    WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' " +
-            "    WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' ELSE 'Sun' " +
+            "    WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' ELSE '' " +
             "  END, ' ', " +
-            "  TIME_FORMAT(sch.start_time, '%H:%i'), '-', TIME_FORMAT(sch.end_time, '%H:%i')) " +
-            "  SEPARATOR ', ') as schedule " +
+            "  TIME_FORMAT(sch.start_time, '%h:%i %p'), '-', TIME_FORMAT(sch.end_time, '%h:%i %p')) " +
+            "  SEPARATOR ', '), 'TBA') as schedule " +
             "FROM student_enlistments se " +
             "JOIN courses c ON se.course_id = c.course_id " +
-            "LEFT JOIN class_sections cs ON c.course_id = cs.course_id " +
+            "LEFT JOIN class_sections cs ON se.section_id = cs.section_id " +  // <-- This fixes the schedules!
             "LEFT JOIN class_schedules sch ON cs.section_id = sch.section_id " +
             "WHERE se.student_id = ? " +
-            "GROUP BY se.enlistment_id, c.course_code, c.course_title, c.credit_units", 
+            "GROUP BY se.enlistment_id", 
             student.getId());
 
         model.addAttribute("enlistedSubjects", enlistedSubjects);
         
-        // ➤ FIXED: Added ", remarks" to the SQL query below
+        // 8. Payment History (Naturally displays ALL transactions, including parking/documents)
         List<Map<String, Object>> paymentHistory = jdbcTemplate.queryForList(
             "SELECT transaction_id, amount, payment_method, payment_date, remarks FROM payments " +
             "WHERE reference_number = ? ORDER BY payment_date DESC",

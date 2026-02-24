@@ -90,12 +90,14 @@ public class EnrollmentController {
                 calculateFinancials(s, model);
                 financialService.populateStudentFinancialData(s, model);
                 model.addAttribute("allCourses", jdbcTemplate.queryForList(
-                    "SELECT c.*, cs.max_capacity, " +
-                    "(SELECT COUNT(*) FROM student_enlistments se WHERE se.course_id = c.course_id) as enrolled_count, " +
-                    "(SELECT GROUP_CONCAT(CONCAT(sch.start_time, '-', sch.end_time) SEPARATOR ', ') " +
-                    " FROM class_schedules sch WHERE sch.section_id = cs.section_id) as schedule " +
+                    "SELECT c.course_id, c.course_code, c.course_title, cs.section_id, cs.section_code, COALESCE(cs.max_capacity, 40) as max_capacity, " +
+                    "(SELECT COUNT(*) FROM student_enlistments se WHERE se.section_id = cs.section_id) as enrolled_count, " +
+                    "(SELECT GROUP_CONCAT(CONCAT( " +
+                    "   CASE sch.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' ELSE '' END, " +
+                    "   ' ', TIME_FORMAT(sch.start_time, '%h:%i %p'), '-', TIME_FORMAT(sch.end_time, '%h:%i %p') " +
+                    ") SEPARATOR ', ') FROM class_schedules sch WHERE sch.section_id = cs.section_id) as schedule " +
                     "FROM courses c " +
-                    "LEFT JOIN class_sections cs ON c.course_id = cs.course_id " +
+                    "JOIN class_sections cs ON c.course_id = cs.course_id " +
                     "WHERE c.active_status = 1"
                 ));
             } else {
@@ -109,7 +111,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('ROLE_ADMIN', 'ROLE_FACULTY')")
     @Transactional
     public String enlistSubject(@RequestParam Long studentId, 
-                                @RequestParam Integer courseId, 
+                                @RequestParam Integer sectionId, 
                                 @RequestParam(required = false, defaultValue = "false") boolean confirmWaitlist,
                                 RedirectAttributes ra) {
         
@@ -120,8 +122,16 @@ public class EnrollmentController {
         }
         String studentNum = s.getStudentNumber();
 
+        // ---> NEW: Block adding subjects if the student is already enrolled <---
+        if ("ENROLLED".equalsIgnoreCase(s.getApplicantStatus())) {
+            ra.addFlashAttribute("errorMessage", "Student already enrolled. Please proceed to Registrar to Add and Drop subjects.");
+            return "redirect:/admin/cashier?keyword=" + studentNum;
+        }
+
         try {
-            // 1. Duplicate Check
+            Integer courseId = jdbcTemplate.queryForObject(
+                "SELECT course_id FROM class_sections WHERE section_id = ?", Integer.class, sectionId);
+
             Integer duplicate = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM student_enlistments WHERE student_id = ? AND course_id = ?",
                 Integer.class, studentId, courseId);
@@ -143,30 +153,22 @@ public class EnrollmentController {
                 return "redirect:/admin/cashier?keyword=" + studentNum;
             }
 
-            // 2. Capacity/Waitlist Check
-            Integer sectionId = jdbcTemplate.queryForObject(
-                "SELECT section_id FROM class_sections WHERE course_id = ? LIMIT 1", 
-                Integer.class, courseId);
-                
             if (schedulingService.isSectionFull(sectionId)) {
                 if (!confirmWaitlist) {
                     ra.addFlashAttribute("showWaitlistPrompt", true);
-                    ra.addFlashAttribute("pendingCourseId", courseId);
+                    ra.addFlashAttribute("pendingSectionId", sectionId);
                     return "redirect:/admin/cashier?keyword=" + studentNum;
                 }
-                schedulingService.addToWaitlist(studentId, courseId);
+                schedulingService.addToWaitlist(studentId, sectionId);
                 ra.addFlashAttribute("successMessage", "Added to Waitlist!");
                 return "redirect:/admin/cashier?keyword=" + studentNum;
             }
 
-            // 3. Schedule Conflict
             schedulingService.validateStudentScheduleConflict(studentId, sectionId);
 
-            // 4. Perform Insert
-            jdbcTemplate.update("INSERT INTO student_enlistments (student_id, course_id) VALUES (?, ?)", 
-                               studentId, courseId);
+            jdbcTemplate.update("INSERT INTO student_enlistments (student_id, course_id, section_id) VALUES (?, ?, ?)", 
+                               studentId, courseId, sectionId);
 
-            // --- 5. LOGGING ---
             Map<String, Object> courseInfo = jdbcTemplate.queryForMap("SELECT course_code, course_title FROM courses WHERE course_id = ?", courseId);
             
             SubjectLog log = new SubjectLog();
@@ -177,7 +179,6 @@ public class EnrollmentController {
             log.setTimestamp(new Date());
             log.setPerformedBy("Admin");
             subjectLogRepository.save(log);
-            // ------------------
 
             ra.addFlashAttribute("successMessage", "Subject added successfully!");
 
@@ -198,27 +199,31 @@ public class EnrollmentController {
             @RequestParam String studentNumber, 
             RedirectAttributes ra) {
 
+        // ---> NEW: Block removing subjects if the student is already enrolled <---
+        Student s = studentRepository.findByStudentNumber(studentNumber);
+        if (s != null && "ENROLLED".equalsIgnoreCase(s.getApplicantStatus())) {
+            ra.addFlashAttribute("errorMessage", "student already enrolled proceed to registrar to add and drop subjects");
+            return "redirect:/admin/cashier?keyword=" + studentNumber;
+        }
+
         if (ids == null || ids.isEmpty()) {
             ra.addFlashAttribute("errorMessage", "Please select at least one subject to remove.");
             return "redirect:/admin/cashier?keyword=" + studentNumber;
         }
 
         for (Long id : ids) {
-            // 1. Fetch info
             List<Map<String, Object>> results = jdbcTemplate.queryForList(
                 "SELECT se.course_id, c.course_code, c.course_title " +
                 "FROM student_enlistments se " +
                 "JOIN courses c ON se.course_id = c.course_id " +
                 "WHERE se.enlistment_id = ?", id);
             
-            // 2. Only proceed if found
             if (!results.isEmpty()) {
                 Map<String, Object> info = results.get(0);
                 
                 Object rawId = info.get("course_id");
                 Integer cId = (rawId != null) ? ((Number) rawId).intValue() : null;
                 
-                // Log the action
                 SubjectLog log = new SubjectLog();
                 log.setStudentNumber(studentNumber);
                 log.setAction("REMOVED");
@@ -228,7 +233,6 @@ public class EnrollmentController {
                 log.setPerformedBy("Admin");
                 subjectLogRepository.save(log);
 
-                // 3. Delete and Promote
                 jdbcTemplate.update("DELETE FROM student_enlistments WHERE enlistment_id = ?", id);
                 
                 if (cId != null) {
@@ -252,10 +256,8 @@ public class EnrollmentController {
                 calculateFinancials(student, model); 
                 financialService.populateStudentFinancialData(student, model);
                 
-                // --- Fetch Subject History ---
                 List<SubjectLog> history = subjectLogRepository.findByStudentNumberOrderByTimestampDesc(student.getStudentNumber());
                 model.addAttribute("subjectHistory", history);
-                // -----------------------------
                 
                 return "account_status";
             }
@@ -278,7 +280,6 @@ public class EnrollmentController {
 
     // --- HELPER METHOD ---
     private void calculateFinancials(Student student, Model model) {
-        // 1. Calculate Units & Tuition
         Integer totalUnits = jdbcTemplate.queryForObject(
             "SELECT COALESCE(SUM(c.credit_units), 0) FROM student_enlistments se JOIN courses c ON se.course_id = c.course_id WHERE se.student_id = ?",
             Integer.class, student.getId());
@@ -288,25 +289,36 @@ public class EnrollmentController {
             unitsToCharge = 24;
         }
         double tuition = unitsToCharge * 1500.00;
-        Double paymentsSum = paymentRepository.getTotalPaymentsByReferenceNumber(student.getStudentNumber());
-        double totalPaid = (paymentsSum != null) ? paymentsSum : 0.00;
+        
+        Double tuitionPaymentsFromDb = jdbcTemplate.queryForObject(
+            "SELECT SUM(amount) FROM payments WHERE reference_number = ? " +
+            "AND (remarks = 'Tuition Fee' OR remarks IS NULL OR remarks = '')", 
+            Double.class, student.getStudentNumber());
+            
+        double totalPaid = (tuitionPaymentsFromDb != null) ? tuitionPaymentsFromDb : 0.00;
+
+     // NEW: Calculate Misc and Other fees based on enrollment status
+        double miscTotal = (totalUnits != null && totalUnits > 0) ? 7431.00 : 0.00;
+        double otherFeesTotal = (totalUnits != null && totalUnits > 0) ? 18562.00 : 0.00;
 
         model.addAttribute("totalUnits", totalUnits);
         model.addAttribute("tuitionTotal", tuition);
         model.addAttribute("totalOnlinePayments", totalPaid);
-        model.addAttribute("outstandingBalance", (tuition + 7431 + 18562) - (totalPaid + 3000));
+        model.addAttribute("outstandingBalance", (tuition + miscTotal + otherFeesTotal) - totalPaid);
         
-        // 2. Fetch Enlisted Subjects
         List<Map<String, Object>> enlisted = jdbcTemplate.queryForList(
             "SELECT se.enlistment_id, c.course_code, c.course_title, c.credit_units, " +
-            "GROUP_CONCAT(CONCAT(sch.start_time, '-', sch.end_time) SEPARATOR ', ') as schedule " +
-            "FROM student_enlistments se JOIN courses c ON se.course_id = c.course_id " +
-            "LEFT JOIN class_sections cs ON c.course_id = cs.course_id " +
+            "COALESCE(GROUP_CONCAT(CONCAT( " +
+            "   CASE sch.day_of_week WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' WHEN 7 THEN 'Sun' ELSE '' END, " +
+            "   ' ', TIME_FORMAT(sch.start_time, '%h:%i %p'), '-', TIME_FORMAT(sch.end_time, '%h:%i %p') " +
+            ") SEPARATOR ', '), 'TBA') as schedule " +
+            "FROM student_enlistments se " +
+            "JOIN courses c ON se.course_id = c.course_id " +
+            "LEFT JOIN class_sections cs ON se.section_id = cs.section_id " + 
             "LEFT JOIN class_schedules sch ON cs.section_id = sch.section_id " +
             "WHERE se.student_id = ? GROUP BY se.enlistment_id", student.getId());
         model.addAttribute("enlistedSubjects", enlisted);
 
-        // 3. FETCH PAYMENT HISTORY (FIXED: Includes 'remarks')
         List<Map<String, Object>> paymentHistory = jdbcTemplate.queryForList(
             "SELECT transaction_id, amount, payment_method, payment_date, remarks " + 
             "FROM payments WHERE reference_number = ? ORDER BY payment_date DESC",

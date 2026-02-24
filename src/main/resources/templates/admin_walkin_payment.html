@@ -204,6 +204,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+										<tr>
+					                    <td style="padding: 12px;">Downpayment</td>
+					                    <td style="text-align: right; padding: 12px; font-weight: bold;" 
+			                            th:text="${#numbers.formatDecimal(downpaymentAmount, 1, 'COMMA', 2, 'POINT')}">3,000.00</td>
+				                        <td style="text-align: center; padding: 12px;">
+										 <span th:text="${downpaymentStatus}" 
+									 th:style="${downpaymentStatus == 'PAID' ? 'color: green; font-weight: bold;' : 'color: red; font-weight: bold;'}"></span>
+										</td>
+										 </tr>
                                         <tr th:each="inst : ${installments}">
                                             <td th:text="${inst.label}" style="font-size: 0.85rem; font-weight: bold; color: #333;"></td>
                                             <td style="text-align: right;">

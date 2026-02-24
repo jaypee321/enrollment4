@@ -132,10 +132,27 @@ public class AdminController {
         paymentRepository.save(payment);
         
         // Update student status if needed
-        if (!"ENROLLED".equals(student.getApplicantStatus())) {
-            student.setApplicantStatus("ENROLLED");
-            studentRepository.save(student);
-        }
+        Double tuitionPayments = jdbcTemplate.queryForObject(
+                "SELECT SUM(amount) FROM payments WHERE reference_number = ? " +
+                "AND (remarks = 'Tuition Fee' OR remarks IS NULL OR remarks = '')", 
+                Double.class, student.getStudentNumber());
+                
+            double totalPaid = (tuitionPayments != null) ? tuitionPayments : 0.00;
+
+            // 2. Change status based on the 3000 Downpayment Threshold
+            if (totalPaid >= 3000.00) {
+                // If they paid 3000 or more, they are ENROLLED
+                if (!"ENROLLED".equalsIgnoreCase(student.getApplicantStatus())) {
+                    student.setApplicantStatus("ENROLLED");
+                    studentRepository.save(student);
+                }
+            } else {
+                // If they haven't hit 3000 yet, they stay PENDING
+                if (!"PENDING".equalsIgnoreCase(student.getApplicantStatus())) {
+                    student.setApplicantStatus("PENDING");
+                    studentRepository.save(student);
+                }
+            }
 
         redirectAttributes.addFlashAttribute("successMessage", "Payment successful for " + student.getLastName() + " (" + student.getStudentNumber() + ")");
         redirectAttributes.addFlashAttribute("transactionId", transactionId);
