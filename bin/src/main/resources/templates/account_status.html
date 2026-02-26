@@ -12,26 +12,26 @@
             <img th:src="@{/images/emblem.png}" alt="EAC Logo" class="sidebar-logo">
             <h3>STUDENT PORTAL</h3>
         </div>
-		<nav class="nav-menu">
-		    <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ADMIN')">
-		        <i class="fas fa-chart-line"></i> Dashboard
-		    </a>
+        <nav class="nav-menu">
+            <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
 
-		    <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'CASHIER')">
-		        <i class="fas fa-file-invoice-dollar"></i> Student Ledger
-		    </a>
+            <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ADMIN')">
+                <i class="fas fa-file-invoice-dollar"></i> Student Ledger
+            </a>
 
-		    <a th:href="@{/admin/walkin-payment}" class="nav-item active">
-		        <i class="fas fa-cash-register"></i> Process Payment
-		    </a>
+            <a th:href="@{/admin/walkin-payment(keyword=${student != null ? student.studentNumber : ''})}" class="nav-item active">
+                <i class="fas fa-cash-register"></i> Process Payment
+            </a>
 
-		    <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ADMIN')">
-		        <i class="fas fa-history"></i> Subject Logs
-		    </a>
+            <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <i class="fas fa-history"></i> Subject Logs
+            </a>
 
-		    <div class="nav-divider"></div>
-		    <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-		</nav>
+            <div class="nav-divider"></div>
+            <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
     </aside>
 
     <main class="main-content">
@@ -61,167 +61,207 @@
                     </tbody>
                 </table>
             </div>
-           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px;">
-			<div class="card">
-			    <div class="card-header"><i class="fas fa-calculator"></i> <h3>Financial Assessment</h3></div>
-			    <div class="fee-list" style="padding: 20px;">
-			        <div class="fee-item">
-			            <span>Tuition Fee (<span th:text="${totalUnits}">0</span> Units)</span>
-			            <span th:text="${#numbers.formatDecimal(tuitionTotal, 1, 'COMMA', 2, 'POINT')}"></span>
-			        </div>
 
-			        <div class="fee-item" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">
-			            <span style="font-weight: 600; color: #555;">Miscellaneous Fees</span>
-			            <span style="font-weight: 600;">7,431.00</span>
-			        </div>
-			        <div style="padding-left: 20px; font-size: 0.85rem; color: #777;">
-			            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Registration / Library</span><span>1,850.00</span></div>
-			            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Medical & Dental / Athletics</span><span>2,200.00</span></div>
-			            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Guidance / Student Activity</span><span>3,381.00</span></div>
-			        </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px;">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-calculator"></i> <h3>Financial Assessment</h3></div>
+                    <div class="fee-list" style="padding: 20px;">
+                        <div class="fee-item">
+                            <span>Tuition Fee (<span th:text="${totalUnits}">0</span> Units)</span>
+                            <span th:text="${#numbers.formatDecimal(tuitionTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
 
-			        <div class="fee-item" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">
-			            <span style="font-weight: 600; color: #555;">Other Fees</span>
-			            <span style="font-weight: 600;">18,562.00</span>
-			        </div>
-			        <div style="padding-left: 20px; font-size: 0.85rem; color: #777;">
-			            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Computer / Laboratory Fee</span><span>9,250.00</span></div>
-			            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Development / Energy Fee</span><span>9,312.00</span></div>
-			        </div>
+                        <div class="fee-item" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">
+                            <span style="font-weight: 600; color: #555;">Miscellaneous Fees</span>
+                            <span style="font-weight: 600;">7,431.00</span>
+                        </div>
+                        <div style="padding-left: 20px; font-size: 0.85rem; color: #777;">
+                            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Registration / Library</span><span>1,850.00</span></div>
+                            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Medical & Dental / Athletics</span><span>2,200.00</span></div>
+                            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Guidance / Student Activity</span><span>3,381.00</span></div>
+                        </div>
 
-			        <div class="fee-item" style="margin-top: 15px; border-top: 2px solid #800000; padding-top: 10px; color: #27ae60; font-weight: bold;">
-			            <span>Total Payments Made</span>
-			            <span th:text="' ' + ${#numbers.formatDecimal(totalOnlinePayments + 3000, 1, 'COMMA', 2, 'POINT')}"></span>
-			        </div>
+                        <div class="fee-item" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">
+                            <span style="font-weight: 600; color: #555;">Other Fees</span>
+                            <span style="font-weight: 600;">18,562.00</span>
+                        </div>
+                        <div style="padding-left: 20px; font-size: 0.85rem; color: #777;">
+                            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Computer / Laboratory Fee</span><span>9,250.00</span></div>
+                            <div class="fee-item" style="border:none; padding: 2px 0;"><span>Development / Energy Fee</span><span>9,312.00</span></div>
+                        </div>
 
-			        <div class="fee-item total" style="background: #fdf2f2; padding: 10px; border-radius: 4px;">
-			            <span style="color: #800000;">OUTSTANDING BALANCE</span>
-			            <span style="color: #800000; font-size: 1.2rem;" th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
-			        </div>
-			    </div>
-			</div>
-	
-			    
-			    
+                        <div class="fee-item" style="margin-top: 15px; border-top: 2px solid #800000; padding-top: 10px; color: #27ae60; font-weight: bold;">
+                            <span>Total Payments Made</span>
+                            <span th:text="' ' + ${#numbers.formatDecimal(totalOnlinePayments + 3000, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
 
-			    <div class="card">
-			        <div class="card-header"><i class="fas fa-calendar-alt"></i> <h3>Payment Schedule</h3></div>
-			        <div class="card-body" style="padding: 0;">
-			            <table class="modern-table">
-			                <thead>
-			                    <tr>
-			                        <th>Installment</th>
-			                        <th style="text-align: right;">Amount</th>
-			                        <th>Status</th>
-			                    </tr>
-			                </thead>
-			                <tbody>
-			                    <tr th:each="inst : ${installments}">
-			                        <td th:text="${inst.label}"></td>
-			                        <td style="text-align: right; font-weight: bold;" 
-			                            th:text="${#numbers.formatDecimal(inst.amount, 1, 'COMMA', 2, 'POINT')}"></td>
-			                        <td>
-			                            <span th:text="${inst.status}" 
-			                                  th:style="${inst.status == 'PAID' ? 'color: green' : 'color: red'}"></span>
-			                        </td>
-			                    </tr>
-			                </tbody>
-			            </table>
-						<div class="fee-item total" style="background: #fdf2f2; padding: 15px; border-top: 2px solid #800000; display: flex; justify-content: space-between; align-items: center;">
-										            <span style="color: #800000; font-weight: bold; letter-spacing: 1px;">TOTAL OUTSTANDING BALANCE</span>
-										            <span style="color: #800000; font-size: 1.4rem; font-weight: 800;" 
-										                  th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
-										        </div>
-			        </div>
-			    </div>
-			</div>
-			<div class="card">
-			    <details>
-			        <summary class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none;">
-			            <div>
-			                <i class="fas fa-history"></i> 
-			                <h3 style="display: inline; margin-left: 10px;">Transaction History</h3>
-			            </div>
-			            <span th:if="${not #lists.isEmpty(paymentHistory)}" 
-			                  style="background: #27ae60; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem;">
-			                Total: <span th:text="'₱' + ${#numbers.formatDecimal(#aggregates.sum(paymentHistory.![amount]), 1, 'COMMA', 2, 'POINT')}"></span>
-			            </span>
-			            <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
-			        </summary>
-			        
-			        <div class="card-body" style="padding: 0; border-top: 1px solid #eee;">
-			            <table class="modern-table" style="margin-top: 0;">
-			                <thead>
-			                    <tr>
-			                        <th>Date & Time</th>
-			                        <th>Method</th>
-			                        <th style="text-align: right;">Amount</th>
-			                    </tr>
-			                </thead>
-			                <tbody>
-			                    <tr th:each="pay : ${paymentHistory}">
-			                        <td th:text="${#temporals.format(pay.payment_date, 'MMM dd, yyyy hh:mm a')}"></td>
-			                        <td th:text="${pay.payment_method}"></td>
-			                        <td style="text-align: right; font-weight: bold; color: #27ae60;" 
-			                            th:text="${#numbers.formatDecimal(pay.amount, 1, 'COMMA', 2, 'POINT')}"></td>
-			                    </tr>
-			                </tbody>
-			            </table>
-			        </div>
-			    </details>
-			</div>
-			
-			<div class="card" style="margin-top: 25px;">
-			    <details>
-			        <summary class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none; outline: none;">
-			            <div style="display: flex; align-items: center; gap: 10px;">
-			                <i class="fas fa-clipboard-list" style="color: #800000;"></i>
-			                <h3 style="margin: 0; color: #800000; font-size: 1.17em;">Subject Enlistment History</h3>
-			            </div>
-			            <i class="fas fa-chevron-down" style="color: #777;"></i>
-			        </summary>
-			        
-			        <div class="card-body" style="padding: 0; border-top: 1px solid #eee;">
-			            <table class="modern-table" style="width: 100%; border-collapse: collapse;">
-			                
-			                <thead style="background: #800000;">
-			                    <tr>
-			                        <th style="padding: 15px; text-align: left; font-size: 0.85rem; color: white; border-bottom: 1px solid #eee;">Date & Time</th>
-			                        <th style="padding: 15px; text-align: center; font-size: 0.85rem; color: white; border-bottom: 1px solid #eee;">Action</th>
-			                        <th style="padding: 15px; text-align: left; font-size: 0.85rem; color: white; border-bottom: 1px solid #eee;">Subject Details</th>
-			                    </tr>
-			                </thead>
-			                <tbody>
-			                    <tr th:each="log : ${subjectHistory}" style="border-bottom: 1px solid #eee;">
-			                        <td style="padding: 15px; font-size: 0.9rem; color: #333;" 
-			                            th:text="${#dates.format(log.timestamp, 'MMM dd, yyyy hh:mm a')}">
-			                        </td>
-			                        
-			                        <td style="padding: 15px; text-align: center;">
-			                            <span th:text="${log.action}"
-			                                  th:style="${log.action == 'ADDED' ? 
-			                                  'background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px;' : 
-			                                  'background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px;'}">
-			                            </span>
-			                        </td>
-			                        
-			                        <td style="padding: 15px;">
-			                            <div style="font-weight: bold; font-size: 0.95rem; color: #333;" th:text="${log.courseCode}"></div>
-			                            <div style="font-size: 0.85rem; color: #666; margin-top: 2px;" th:text="${log.courseTitle}"></div>
-			                        </td>
-			                    </tr>
-			                    
-			                    <tr th:if="${#lists.isEmpty(subjectHistory)}">
-			                        <td colspan="3" style="text-align: center; padding: 30px; color: #999; font-style: italic;">
-			                            <i class="fas fa-info-circle" style="margin-right: 5px;"></i> No subject changes recorded yet.
-			                        </td>
-			                    </tr>
-			                </tbody>
-			            </table>
-			        </div>
-			    </details>
-			</div>
+                        <div class="fee-item total" style="background: #fdf2f2; padding: 10px; border-radius: 4px;">
+                            <span style="color: #800000;">OUTSTANDING BALANCE</span>
+                            <span style="color: #800000; font-size: 1.2rem;" th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-calendar-alt"></i> <h3>Payment Schedule</h3></div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Installment</th>
+                                    <th style="text-align: right;">Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="inst : ${installments}">
+                                    <td th:text="${inst.label}"></td>
+                                    <td style="text-align: right; font-weight: bold;" 
+                                        th:text="${#numbers.formatDecimal(inst.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+                                    <td>
+                                        <span th:text="${inst.status}" 
+                                              th:style="${inst.status == 'PAID' ? 'color: green' : 'color: red'}"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="fee-item total" style="background: #fdf2f2; padding: 15px; border-top: 2px solid #800000; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #800000; font-weight: bold; letter-spacing: 1px;">TOTAL OUTSTANDING BALANCE</span>
+                            <span style="color: #800000; font-size: 1.4rem; font-weight: 800;" 
+                                  th:text="'₱ ' + ${#numbers.formatDecimal(outstandingBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <details open> 
+                    <summary class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none;">
+                        <div>
+                            <i class="fas fa-history"></i> 
+                            <h3 style="display: inline; margin-left: 10px;">Transaction History</h3>
+                        </div>
+                        <i class="fas fa-chevron-down" style="color: #777;"></i>
+                    </summary>
+                    
+                    <div class="card-body" style="padding: 0; border-top: 1px solid #eee;">
+                        
+                        <div style="padding: 15px; border-bottom: 1px solid #eee; background: #f9f9f9; display:flex; align-items:center; gap: 10px;">
+                            <label style="font-weight: bold; color: #555;"><i class="fas fa-filter"></i> Filter by Type:</label>
+                            <select id="historyFilter" class="search-input" style="width: 250px; height: 35px; padding: 0 10px;" onchange="filterHistory()">
+                                <option value="ALL">All Transactions</option>
+                                <option value="Tuition Fee">Tuition Fee</option>
+                                <option value="Certificate">Certificates / Documents</option>
+                                <option value="Parking">Parking</option>
+                                <option value="Rental">Rental</option>
+                                <option value="Dormitory">Dormitory</option>
+                                <option value="Special Funds">Special Funds</option>
+                            </select>
+                        </div>
+
+                        <table class="modern-table" id="historyTable" style="margin-top: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Type / Remarks</th> <th>Method</th>
+                                    <th style="text-align: right;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pay : ${paymentHistory}" class="history-row">
+                                    <td th:text="${#temporals.format(pay.payment_date, 'MMM dd, yyyy hh:mm a')}"></td>
+                                    
+                                    <td class="row-type" style="font-weight: 500; color: #444;" 
+                                        th:text="${pay.get('remarks') != null and pay.get('remarks') != '' ? pay.get('remarks') : 'Tuition Fee'}">
+                                    </td>
+                                    
+                                    <td th:text="${pay.payment_method}"></td>
+                                    
+                                    <td style="text-align: right; font-weight: bold; color: #27ae60;" 
+                                        th:text="${#numbers.formatDecimal(pay.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+                                </tr>
+                                
+                                <tr th:if="${#lists.isEmpty(paymentHistory)}">
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #999;">No payment history found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+            <div class="card" style="margin-top: 25px;">
+                <details>
+                    <summary class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none; outline: none;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-clipboard-list" style="color: #800000;"></i>
+                            <h3 style="margin: 0; color: #800000; font-size: 1.17em;">Subject Enlistment History</h3>
+                        </div>
+                        <i class="fas fa-chevron-down" style="color: #777;"></i>
+                    </summary>
+                    
+                    <div class="card-body" style="padding: 0; border-top: 1px solid #eee;">
+                        <table class="modern-table" style="width: 100%; border-collapse: collapse;">
+                            
+                            <thead style="background: #800000;">
+                                <tr>
+                                    <th style="padding: 15px; text-align: left; font-size: 0.85rem; color: white; border-bottom: 1px solid #eee;">Date & Time</th>
+                                    <th style="padding: 15px; text-align: center; font-size: 0.85rem; color: white; border-bottom: 1px solid #eee;">Action</th>
+                                    <th style="padding: 15px; text-align: left; font-size: 0.85rem; color: white; border-bottom: 1px solid #eee;">Subject Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="log : ${subjectHistory}" style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 15px; font-size: 0.9rem; color: #333;" 
+                                        th:text="${#dates.format(log.timestamp, 'MMM dd, yyyy hh:mm a')}">
+                                    </td>
+                                    
+                                    <td style="padding: 15px; text-align: center;">
+                                        <span th:text="${log.action}"
+                                              th:style="${log.action == 'ADDED' ? 
+                                              'background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px;' : 
+                                              'background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px;'}">
+                                        </span>
+                                    </td>
+                                    
+                                    <td style="padding: 15px;">
+                                        <div style="font-weight: bold; font-size: 0.95rem; color: #333;" th:text="${log.courseCode}"></div>
+                                        <div style="font-size: 0.85rem; color: #666; margin-top: 2px;" th:text="${log.courseTitle}"></div>
+                                    </td>
+                                </tr>
+                                
+                                <tr th:if="${#lists.isEmpty(subjectHistory)}">
+                                    <td colspan="3" style="text-align: center; padding: 30px; color: #999; font-style: italic;">
+                                        <i class="fas fa-info-circle" style="margin-right: 5px;"></i> No subject changes recorded yet.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+        </div>
     </main>
 </div>
+
+<script>
+    function filterHistory() {
+        var filter = document.getElementById("historyFilter").value.toUpperCase();
+        var rows = document.getElementsByClassName("history-row");
+
+        for (var i = 0; i < rows.length; i++) {
+            var typeCell = rows[i].querySelector(".row-type");
+            var typeText = typeCell ? typeCell.textContent.toUpperCase() : "";
+
+            // Logic: If filter is ALL, show everything.
+            // If filter is specific, check if the text INCLUDES the filter word (e.g., "Certificate" matches "Certificate - TOR")
+            if (filter === "ALL" || typeText.includes(filter)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
 </body>
 </html>

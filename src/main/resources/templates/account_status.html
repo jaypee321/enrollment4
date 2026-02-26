@@ -12,22 +12,19 @@
             <img th:src="@{/images/emblem.png}" alt="EAC Logo" class="sidebar-logo">
             <h3>STUDENT PORTAL</h3>
         </div>
-        <nav class="nav-menu">
-            <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ADMIN')">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
+		<nav class="nav-menu">
+		           <a th:href="@{/index}" class="nav-item">
+		               <i class="fas fa-home"></i> Home
+		           </a>
+		           <a th:href="@{/account_status(studentNumber=${student != null ? student.studentNumber : ''})}" 
+		              class="nav-item" th:if="${student != null}">
+		               <i class="fas fa-file-invoice-dollar"></i> My Ledger
+		           </a>
+		           <a th:href="@{/status}" class="nav-item active">
+		               <i class="fas fa-tasks"></i> Application Status
+		           </a>
 
-            <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ADMIN')">
-                <i class="fas fa-file-invoice-dollar"></i> Student Ledger
-            </a>
-
-            <a th:href="@{/admin/walkin-payment(keyword=${student != null ? student.studentNumber : ''})}" class="nav-item active">
-                <i class="fas fa-cash-register"></i> Process Payment
-            </a>
-
-            <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ADMIN')">
-                <i class="fas fa-history"></i> Subject Logs
-            </a>
+            
 
             <div class="nav-divider"></div>
             <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>

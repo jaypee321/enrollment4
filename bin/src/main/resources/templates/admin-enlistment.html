@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="admin-container">
-        <h2>Course Enlistment: <span th:text="${student.firstName + ' ' + student.lastName}"></span></h2>
+        <h2>Course Enlistment: <span th:text="|${student.firstName ?: ''} ${student.lastName ?: ''}|"></span></h2>
         
         <form th:action="@{/admin/enlistment/save}" method="post">
             <input type="hidden" name="studentId" th:value="${student.id}">

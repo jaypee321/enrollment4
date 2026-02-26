@@ -120,8 +120,8 @@
         <h2 style="margin-top: 0; margin-bottom: 20px;">Enter Amount & Pay</h2>
         
         <form th:action="@{/process-payment}" method="POST" id="paymentForm">
-            <input type="hidden" name="referenceNumber" th:value="${student.referenceNumber}">
-            <input type="hidden" id="selectedMethod" name="paymentMethod" value="Credit Card">
+			<input type="hidden" name="referenceNumber" th:value="${student.referenceNumber}">
+			            <input type="hidden" name="remarks" value="Tuition Fee"> <input type="hidden" id="selectedMethod" name="paymentMethod" value="Credit Card">
 
             <div class="form-group">
                 <label for="amountInput">Amount to Pay (PHP)</label>

@@ -25,7 +25,7 @@
 		        <i class="fas fa-chart-line"></i> Dashboard
 		    </a>
 
-		    <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_CASHIER')">
+		    <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ROLE_CASHIER')">
 		        <i class="fas fa-file-invoice-dollar"></i> Student Ledger
 		    </a>
 
@@ -33,7 +33,7 @@
 		        <i class="fas fa-cash-register"></i> Process Payment
 		    </a>
 
-		    <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+		    <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_FACULTY')">
 		        <i class="fas fa-history"></i> Subject Logs
 		    </a>
 

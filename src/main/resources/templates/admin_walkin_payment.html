@@ -72,18 +72,21 @@
             <h3>EAC CASHIER</h3>
         </div>
         <nav class="nav-menu">
-            <a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_CASHIER')">
-                <i class="fas fa-file-invoice-dollar"></i> Student Ledger
-            </a>
-            <a th:href="@{/admin/walkin-payment}" class="nav-item active">
-                <i class="fas fa-cash-register"></i> Process Payment
-            </a>
-            <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
-                <i class="fas fa-history"></i> Subject Logs
-            </a>
+			<a th:href="@{/admin/dashboard}" class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+					        <i class="fas fa-chart-line"></i> Dashboard
+					    </a>
+
+					    <a th:href="@{/admin/cashier}" class="nav-item" sec:authorize="hasAnyRole('ROLE_CASHIER')">
+					        <i class="fas fa-file-invoice-dollar"></i> Student Ledger
+					    </a>
+
+					    <a th:href="@{/admin/walkin-payment}" class="nav-item active" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_CASHIER')">
+					        <i class="fas fa-cash-register"></i> Process Payment
+					    </a>
+
+					    <a th:href="@{/admin/history-subject}" class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_FACULTY')">
+					        <i class="fas fa-history"></i> Subject Logs
+					    </a>
             <div class="nav-divider"></div>
             <a th:href="@{/logout}" class="nav-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
